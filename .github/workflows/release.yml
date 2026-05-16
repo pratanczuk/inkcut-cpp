@@ -141,18 +141,14 @@ jobs:
             -v "${{ github.workspace }}:/src" -w /src \
             -e DEBIAN_FRONTEND=noninteractive \
             ${{ matrix.image }} bash -eux -c '
-              echo "DIAG uname/id/dpkg state:"
-              uname -a
-              id
-              ls -la /var/lib/dpkg/ | head -30 || true
-              ls -la /var/lib/dpkg/lock* 2>/dev/null || echo "no lock files yet"
-              stat -f /var/lib/dpkg 2>&1 || true
-              cat /proc/self/mountinfo | head -20 || true
-              echo "--- try touch ---"
-              touch /var/lib/dpkg/test-touch && echo "touch OK" && rm /var/lib/dpkg/test-touch || echo "touch FAILED"
-              echo "--- try dpkg --print-architecture ---"
-              dpkg --print-architecture
-              echo "--- apt-get update ---"
+              # Under qemu-user emulation, opening files in mode 640
+              # owned by root fails with EACCES even when running as
+              # uid=0/gid=0. The uid bypass that the kernel normally
+              # gives root does not survive the QEMU translation for
+              # some open() flag combinations. Loosen perms on the
+              # dpkg lock files so apt-get install can open them.
+              chmod 0666 /var/lib/dpkg/lock /var/lib/dpkg/lock-frontend \
+                         /var/lib/apt/lists/lock 2>/dev/null || true
               apt-get update
               # git: required by CMake FetchContent (libdxfrw).
               # qt6-l10n-tools: provides lconvert/lupdate/lrelease that
