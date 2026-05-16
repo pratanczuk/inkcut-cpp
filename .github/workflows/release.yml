@@ -106,72 +106,58 @@ jobs:
           path: build/*.deb
           if-no-files-found: error
 
-  # --- armhf cross-build via Docker + QEMU (for Rockchip RK3128, RPi 32-bit) -
+  # --- armhf cross-build via QEMU (for Rockchip RK3128, RPi 32-bit) ---------
+  # Uses uraimo/run-on-arch-action which sets up QEMU+binfmt in a way that
+  # works around the known dpkg/apt EACCES issues seen when invoking
+  # `docker run --platform linux/arm/v7 arm32v7/ubuntu:*` directly on recent
+  # Azure host kernels.
   armhf:
     name: ${{ matrix.codename }} / armhf (QEMU)
     strategy:
       fail-fast: false
       matrix:
         include:
-          - codename: jammy   # Ubuntu 22.04 — target for RK3128
-            image:    arm32v7/ubuntu:22.04
+          - codename: jammy   # Ubuntu 22.04 — primary target for RK3128
+            distro:   ubuntu22.04
           - codename: noble   # Ubuntu 24.04 armhf (best-effort)
-            image:    arm32v7/ubuntu:24.04
+            distro:   ubuntu24.04
     runs-on: ubuntu-24.04
+    # packages: write lets uraimo/run-on-arch-action cache the dependency
+    # image layer in ghcr.io of this repo, dramatically speeding up reruns.
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      - name: Build inside ${{ matrix.distro }} / armv7
+        uses: uraimo/run-on-arch-action@v3
         with:
-          # Pin QEMU to v8.1.5 — newer binfmt images ship qemu 9/10 which
-          # have a regression causing apt-get install to fail inside
-          # arm32v7 containers with "Could not open lock file
-          # /var/lib/dpkg/lock-frontend - Permission denied" (despite
-          # running as root). See tonistiigi/binfmt#245.
-          image: tonistiigi/binfmt:qemu-v8.1.5
-          platforms: arm
-
-      - name: Build inside ${{ matrix.image }}
-        run: |
-          docker run --rm --platform linux/arm/v7 \
-            --privileged \
-            --security-opt seccomp=unconfined \
-            -u 0:0 \
-            -v "${{ github.workspace }}:/src" -w /src \
-            -e DEBIAN_FRONTEND=noninteractive \
-            ${{ matrix.image }} bash -eux -c '
-              # Under qemu-user emulation, opening files in mode 640
-              # owned by root fails with EACCES even when running as
-              # uid=0/gid=0. The uid bypass that the kernel normally
-              # gives root does not survive the QEMU translation for
-              # some open() flag combinations. Loosen perms on the
-              # dpkg lock files so apt-get install can open them.
-              chmod 0666 /var/lib/dpkg/lock /var/lib/dpkg/lock-frontend \
-                         /var/lib/apt/lists/lock 2>/dev/null || true
-              apt-get update
-              # git: required by CMake FetchContent (libdxfrw).
-              # qt6-l10n-tools: provides lconvert/lupdate/lrelease that
-              # Qt6LinguistTools imports as Qt6::lconvert (see comment
-              # in the native job).
-              # libgl-dev / libegl-dev: needed by Qt6Gui's WrapOpenGL
-              # find_dependency (see comment in the native job).
-              apt-get install -y --no-install-recommends \
-                cmake ninja-build g++ pkg-config ca-certificates git \
-                qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
-                qt6-l10n-tools \
-                libqt6serialport6-dev libqt6svg6-dev \
-                libgl-dev libegl-dev \
-                libpotrace-dev \
-                dpkg-dev fakeroot
-              cmake -S . -B build -G Ninja \
-                -DCMAKE_BUILD_TYPE=Release \
-                -DCMAKE_INSTALL_PREFIX=/usr \
-                -DCMAKE_CXX_FLAGS="-march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=hard"
-              cmake --build build -j$(nproc)
-              QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure || true
-              cd build && cpack -G DEB
-            '
+          arch: armv7
+          distro: ${{ matrix.distro }}
+          # Cache the dependency-installed image layer in the project's
+          # ghcr.io registry; subsequent runs skip the long `apt-get install`.
+          githubToken: ${{ github.token }}
+          install: |
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update
+            apt-get install -y --no-install-recommends \
+              cmake ninja-build g++ pkg-config ca-certificates git \
+              qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
+              qt6-l10n-tools \
+              libqt6serialport6-dev libqt6svg6-dev \
+              libgl-dev libegl-dev \
+              libpotrace-dev \
+              dpkg-dev fakeroot file
+          run: |
+            set -eux
+            cmake -S . -B build -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_INSTALL_PREFIX=/usr \
+              -DCMAKE_CXX_FLAGS="-march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=hard"
+            cmake --build build -j$(nproc)
+            QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure || true
+            cd build && cpack -G DEB
 
       - name: Rename .deb (armhf + codename)
         working-directory: build
@@ -179,7 +165,6 @@ jobs:
           set -eux
           for f in *.deb; do
             base="${f%.deb}"
-            # CPack writes arch as "armhf" automatically when dpkg-deb is present
             mv "$f" "${base}_${{ matrix.codename }}_armhf.deb"
           done
           ls -la *.deb
