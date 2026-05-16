@@ -124,6 +124,12 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
+          # Pin QEMU to v8.1.5 — newer binfmt images ship qemu 9/10 which
+          # have a regression causing apt-get install to fail inside
+          # arm32v7 containers with "Could not open lock file
+          # /var/lib/dpkg/lock-frontend - Permission denied" (despite
+          # running as root). See tonistiigi/binfmt#245.
+          image: tonistiigi/binfmt:qemu-v8.1.5
           platforms: arm
 
       - name: Build inside ${{ matrix.image }}
