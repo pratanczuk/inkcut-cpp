@@ -9,12 +9,16 @@ set(INKCUT_HAVE_POTRACE 0)
 set(INKCUT_HAVE_DXFRW 0)
 
 if(INKCUT_USE_POTRACE)
+    # find_library already searches /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}
+    # (multiarch) on its own; PATHS is only a hint.
     find_path(POTRACE_INCLUDE_DIR NAMES potracelib.h potrace.h
               PATHS /usr/include /usr/local/include /usr/include/potrace)
     find_library(POTRACE_LIBRARY NAMES potrace
-                 PATHS /usr/lib/x86_64-linux-gnu /usr/lib /usr/local/lib)
-    if(NOT POTRACE_LIBRARY)
-        foreach(_libdir /usr/lib/x86_64-linux-gnu /usr/lib /usr/local/lib)
+                 PATHS /usr/lib /usr/local/lib)
+    if(NOT POTRACE_LIBRARY AND CMAKE_LIBRARY_ARCHITECTURE)
+        foreach(_libdir
+                "/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}"
+                /usr/lib /usr/local/lib)
             if(EXISTS "${_libdir}/libpotrace.so.0")
                 set(POTRACE_LIBRARY "${_libdir}/libpotrace.so.0")
                 break()
@@ -70,6 +74,14 @@ if(INKCUT_USE_DXFRW)
         set(INKCUT_HAVE_DXFRW 1)
         target_include_directories(dxfrw PUBLIC
             $<BUILD_INTERFACE:${libdxfrw_SOURCE_DIR}/src>)
+        # libdxfrw's CMakeLists.txt enables -Werror -Wall -Wextra -pedantic
+        # at directory scope. New GCC/Clang releases routinely add warnings
+        # that turn into hard build failures (especially on non-x86 archs).
+        # Append -Wno-error at target level so it overrides the directory
+        # flag while keeping all warnings visible.
+        if(NOT MSVC)
+            target_compile_options(dxfrw PRIVATE -Wno-error)
+        endif()
         message(STATUS "libdxfrw: bundled via FetchContent")
     endif()
 endif()

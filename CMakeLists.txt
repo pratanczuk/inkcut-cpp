@@ -5,6 +5,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
+# Static libraries (inkcut_core, fetched dxfrw) end up linked into shared
+# modules (device plugins) and the GUI. On amd64 short-PIC relocations
+# happen to work, but on arm64/armhf the linker refuses to put non-PIC
+# objects into a shared object. Force position-independent code globally.
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 include(CTest)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Xml SerialPort Widgets LinguistTools)

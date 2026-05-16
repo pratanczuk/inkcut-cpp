@@ -55,9 +55,15 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
+          # qt6-l10n-tools provides lconvert/lupdate/lrelease — on
+          # Ubuntu 22.04 qt6-tools-dev declares Qt6::lconvert as an
+          # imported target but does not depend on the package that
+          # ships the binary, so CMake's find_package(Qt6 LinguistTools)
+          # fails. Always pull it in explicitly.
           sudo apt-get install -y --no-install-recommends \
             cmake ninja-build g++ pkg-config \
             qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
+            qt6-l10n-tools \
             libqt6serialport6-dev libqt6svg6-dev \
             libpotrace-dev
 
@@ -122,9 +128,14 @@ jobs:
             -e DEBIAN_FRONTEND=noninteractive \
             ${{ matrix.image }} bash -eux -c '
               apt-get update
+              # git: required by CMake FetchContent (libdxfrw).
+              # qt6-l10n-tools: provides lconvert/lupdate/lrelease that
+              # Qt6LinguistTools imports as Qt6::lconvert (see comment
+              # in the native job).
               apt-get install -y --no-install-recommends \
-                cmake ninja-build g++ pkg-config ca-certificates \
+                cmake ninja-build g++ pkg-config ca-certificates git \
                 qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
+                qt6-l10n-tools \
                 libqt6serialport6-dev libqt6svg6-dev \
                 libpotrace-dev \
                 dpkg-dev fakeroot
