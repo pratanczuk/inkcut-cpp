@@ -49,7 +49,7 @@ QWidget* makeJobPage(QWidget* parent, AppSettings& app)
     flatten->setValue(app.flatten_step);
 
     form->addRow(trInk("Domyślne jednostki"), units);
-    form->addRow(QStringLiteral("Limit optymalizatora"), timeout);
+    form->addRow(trInk("Limit optymalizatora"), timeout);
     form->addRow(trInk("Krok próbkowania"), flatten);
 
     QObject::connect(units, &QComboBox::currentIndexChanged, page, [units, &app]() {
@@ -83,7 +83,7 @@ QWidget* makePreviewPage(QWidget* parent, AppSettings& app)
     grid_h->addWidget(grid_y);
     grid_h->addStretch(1);
 
-    form->addRow(QStringLiteral("Siatka"), grid_row);
+    form->addRow(trInk("Siatka"), grid_row);
     form->addRow(trInk("Przezroczystość"), alpha);
 
     QObject::connect(grid_x, &QCheckBox::toggled, page, [&app](bool on) { app.show_grid_x = on; });
@@ -123,9 +123,9 @@ QWidget* makeSystemPage(QWidget* parent, AppSettings& app)
         page);
     hint->setWordWrap(true);
 
-    form->addRow(QStringLiteral("Motyw"), theme);
+    form->addRow(trInk("Motyw"), theme);
     form->addRow(trInk("Język"), language);
-    form->addRow(QStringLiteral("Profil interfejsu"), ui_profile);
+    form->addRow(trInk("Profil interfejsu"), ui_profile);
     form->addRow(hint);
 
     QObject::connect(theme, &QComboBox::currentIndexChanged, page, [theme, &app]() {
@@ -147,18 +147,17 @@ QWidget* makeControlPage(QWidget* parent, AppSettings& app)
     auto* form = new QFormLayout(page);
 
     auto* load_cmd = new QLineEdit(page);
-    load_cmd->setPlaceholderText(QStringLiteral("np. PG; lub G-code podawania"));
+    load_cmd->setPlaceholderText(trInk("np. PG; lub G-code podawania"));
     load_cmd->setText(app.material_load_command);
 
     auto* unload_cmd = new QLineEdit(page);
-    unload_cmd->setPlaceholderText(QStringLiteral("np. PG; lub G-code cofania"));
+    unload_cmd->setPlaceholderText(trInk("np. PG; lub G-code cofania"));
     unload_cmd->setText(app.material_unload_command);
 
     auto* hint = new QLabel(
-        QStringLiteral(
-            "Komendy wysyłane na port po kliknięciu Załaduj / Wyładuj w zakładce Sterowanie. "
-            "Użyj \\n na końcu linii, jeśli ploter tego wymaga (np. PG;\\n). "
-            "Wymagane połączenie z ploterem."),
+        trInk("Komendy wysyłane na port po kliknięciu Załaduj / Wyładuj w zakładce Sterowanie. "
+              "Użyj \\n na końcu linii, jeśli ploter tego wymaga (np. PG;\\n). "
+              "Wymagane połączenie z ploterem."),
         page);
     hint->setWordWrap(true);
 
@@ -182,20 +181,20 @@ bool runSettingsDialog(QWidget* parent, AppSettings& app, PlotJobSettings& job)
     edited.flatten_step = job.flatten_step;
 
     QDialog dlg(parent);
-    dlg.setWindowTitle(QStringLiteral("Ustawienia — Inkcut"));
+    dlg.setWindowTitle(trInk("Ustawienia — Inkcut"));
 
     const UiProfileMetrics metrics = metricsFor(edited.ui_profile);
     applyDialogProfile(&dlg, metrics.settings_dialog, edited.ui_profile);
 
-    auto* header = new QLabel(QStringLiteral("Ustawienia"), &dlg);
+    auto* header = new QLabel(trInk("Ustawienia"), &dlg);
     header->setStyleSheet(QStringLiteral("font-size: 18px; font-weight: bold; color: #1565c0;"));
 
     auto* nav = new QListWidget(&dlg);
     nav->setMaximumWidth(metrics.settings_nav_max_width);
-    nav->addItem(QStringLiteral("Zadanie"));
+    nav->addItem(trInk("Zadanie"));
     nav->addItem(trInk("Podgląd"));
-    nav->addItem(QStringLiteral("System"));
-    nav->addItem(QStringLiteral("Sterowanie"));
+    nav->addItem(trInk("System"));
+    nav->addItem(trInk("Sterowanie"));
 
     auto* stack = new QStackedWidget(&dlg);
     stack->addWidget(makeJobPage(stack, edited));

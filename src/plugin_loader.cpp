@@ -11,6 +11,8 @@
 #include <QSet>
 #include <QStandardPaths>
 
+#include "i18n.hpp"
+
 namespace inkcut {
 
 namespace {
@@ -99,7 +101,7 @@ void DevicePluginLoader::rescan(QStringList* errors)
             auto* plug = qobject_cast<DevicePlugin*>(obj);
             if (!plug) {
                 if (errors)
-                    errors->append(QStringLiteral("%1: nie jest wtyczką DevicePlugin").arg(path));
+                    errors->append(trInk("%1: nie jest wtyczką DevicePlugin").arg(path));
                 continue;
             }
 

@@ -10,6 +10,8 @@
 #include <cstring>
 #include <cmath>
 
+#include "i18n.hpp"
+
 namespace inkcut {
 
 namespace {
@@ -614,7 +616,7 @@ size_t parse_insert(const QVector<Pair>& p, size_t idx, QPainterPath& out, const
 
     if (depth > 96) {
         if (err)
-            *err = QStringLiteral("DXF: zbyt głębokie INSERT/bloki.");
+            *err = trInk("DXF: zbyt głębokie INSERT/bloki.");
         return idx;
     }
 
@@ -725,7 +727,7 @@ bool loadDxfPainterPathFromBytes(const QByteArray& raw, QPainterPath& out, QStri
 
     if (raw.isEmpty()) {
         if (error_message)
-            *error_message = QStringLiteral("DXF: pusty plik.");
+            *error_message = trInk("DXF: pusty plik.");
         return false;
     }
 
@@ -733,8 +735,8 @@ bool loadDxfPainterPathFromBytes(const QByteArray& raw, QPainterPath& out, QStri
     if (pairs.isEmpty()) {
         if (error_message)
             *error_message =
-                QStringLiteral("DXF: nie można zdekodować par grup (ASCII lub binarny). Zapisz jako "
-                               "ASCII DXF lub sprawdź integrę pliku.");
+                trInk("DXF: nie można zdekodować par grup (ASCII lub binarny). Zapisz jako "
+                      "ASCII DXF lub sprawdź integrę pliku.");
         return false;
     }
 

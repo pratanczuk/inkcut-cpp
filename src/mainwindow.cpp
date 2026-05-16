@@ -197,11 +197,11 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     open_svg_action_ = file_menu_->addAction(trInk("Otwórz SVG / DXF…"), this, &MainWindow::onOpenSvg);
     import_bitmap_action_ =
         file_menu_->addAction(trInk("Import bitmapy…"), this, &MainWindow::onImportBitmap);
-    recent_menu_ = file_menu_->addMenu(QStringLiteral("Ostatnie pliki"));
+    recent_menu_ = file_menu_->addMenu(trInk("Ostatnie pliki"));
     rebuildRecentMenu();
     file_menu_->addSeparator();
-    file_menu_->addAction(QStringLiteral("Zapisz program plotera…"), this, &MainWindow::onExportProgram);
-    file_menu_->addAction(QStringLiteral("Eksport zadania (JSON)…"), this, &MainWindow::onExportJobJson);
+    file_menu_->addAction(trInk("Zapisz program plotera…"), this, &MainWindow::onExportProgram);
+    file_menu_->addAction(trInk("Eksport zadania (JSON)…"), this, &MainWindow::onExportJobJson);
     file_menu_->addSeparator();
     QAction* send_action = file_menu_->addAction(trInk("Wyślij na urządzenie…"), this,
                                                 &MainWindow::onSend);
@@ -219,11 +219,11 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
                            &MainWindow::refreshDevicePlugins);
 
     settings_menu_ = mb->addMenu(trInk("Ustawienia"));
-    settings_menu_->addAction(QStringLiteral("Ustawienia…"), this, &MainWindow::onOpenSettings);
+    settings_menu_->addAction(trInk("Ustawienia…"), this, &MainWindow::onOpenSettings);
     help_menu_ = mb->addMenu(trInk("Pomoc"));
-    help_menu_->addAction(QStringLiteral("O programie…"), this, [this]() {
+    help_menu_->addAction(trInk("O programie…"), this, [this]() {
         QMessageBox::about(this, QStringLiteral("Inkcut C++"),
-                           QStringLiteral("Port C++/Qt aplikacji Inkcut.\nWersja 0.2"));
+                           trInk("Port C++/Qt aplikacji Inkcut.\nWersja 0.2"));
     });
 
     scene_ = new QGraphicsScene(this);
@@ -241,10 +241,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     preview_layout->setContentsMargins(4, 4, 4, 4);
     auto* preview_title = new QLabel(trInk("Podgląd (Preview)"), preview_wrap);
     preview_title->setToolTip(
-        QStringLiteral("Czerwona przerywana — płaszczyzna urządzenia (x-y).\n"
-                       "Czarna ciągła — materiał.\n"
-                       "Czarna przerywana — dostępny obszar (po marginesach).\n"
-                       "Niebieski — ruch jałowy (move); szary — cięcie (cut)."));
+        trInk("Czerwona przerywana — płaszczyzna urządzenia (x-y).\n"
+              "Czarna ciągła — materiał.\n"
+              "Czarna przerywana — dostępny obszar (po marginesach).\n"
+              "Niebieski — ruch jałowy (move); szary — cięcie (cut)."));
     preview_title->setStyleSheet(QStringLiteral("font-weight: bold;"));
     preview_layout->addWidget(preview_title);
     preview_layout->addWidget(attachPlotZoomBar(preview_wrap, preview_view_));
@@ -268,7 +268,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
         return s;
     };
 
-    lv->addWidget(new QLabel(QStringLiteral("Obszar plotowania"), material_tab));
+    lv->addWidget(new QLabel(trInk("Obszar plotowania"), material_tab));
     mat_w_spin_ = make_pad_spin();
     mat_h_spin_ = make_pad_spin();
     mat_w_spin_->setRange(0.1, 99999.9);
@@ -277,13 +277,13 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     mat_h_spin_->setValue(400);
     auto* area_row = new QHBoxLayout();
     area_row->setContentsMargins(0, 0, 0, 0);
-    area_row->addWidget(new QLabel(QStringLiteral("Szer."), material_tab));
+    area_row->addWidget(new QLabel(trInk("Szer."), material_tab));
     area_row->addWidget(mat_w_spin_, 1);
-    area_row->addWidget(new QLabel(QStringLiteral("Wys."), material_tab));
+    area_row->addWidget(new QLabel(trInk("Wys."), material_tab));
     area_row->addWidget(mat_h_spin_, 1);
     lv->addLayout(area_row);
 
-    lv->addWidget(new QLabel(QStringLiteral("Marginesy plotowania"), material_tab));
+    lv->addWidget(new QLabel(trInk("Marginesy plotowania"), material_tab));
     auto* margins_grid = new QGridLayout();
     margins_grid->setContentsMargins(0, 0, 0, 0);
     mat_pad_l_spin_ = make_pad_spin();
@@ -296,13 +296,13 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     mat_pad_t_spin_->setValue(10);
     mat_pad_r_spin_->setValue(10);
     mat_pad_b_spin_->setValue(10);
-    margins_grid->addWidget(new QLabel(QStringLiteral("Lewy"), material_tab), 0, 0);
+    margins_grid->addWidget(new QLabel(trInk("Lewy"), material_tab), 0, 0);
     margins_grid->addWidget(mat_pad_l_spin_, 0, 1);
     margins_grid->addWidget(new QLabel(trInk("Górny"), material_tab), 0, 2);
     margins_grid->addWidget(mat_pad_t_spin_, 0, 3);
-    margins_grid->addWidget(new QLabel(QStringLiteral("Prawy"), material_tab), 1, 0);
+    margins_grid->addWidget(new QLabel(trInk("Prawy"), material_tab), 1, 0);
     margins_grid->addWidget(mat_pad_r_spin_, 1, 1);
-    margins_grid->addWidget(new QLabel(QStringLiteral("Dolny"), material_tab), 1, 2);
+    margins_grid->addWidget(new QLabel(trInk("Dolny"), material_tab), 1, 2);
     margins_grid->addWidget(mat_pad_b_spin_, 1, 3);
     lv->addLayout(margins_grid);
 
@@ -343,7 +343,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
     lv->addWidget(new QLabel(trInk("Podawanie materiału"), material_tab));
     feed_return_rb_ = new QRadioButton(trInk("Powrót do początku"), material_tab);
-    feed_after_rb_ = new QRadioButton(QStringLiteral("Podaj po"), material_tab);
+    feed_after_rb_ = new QRadioButton(trInk("Podaj po"), material_tab);
     feed_return_rb_->setChecked(true);
     auto* feed_grp = new QButtonGroup(material_tab);
     feed_grp->addButton(feed_return_rb_);
@@ -382,11 +382,11 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     auto* graphic_tab = new QWidget(left_tabs_);
     auto* gv = new QVBoxLayout(graphic_tab);
     gv->setSpacing(6);
-    file_path_label_ = new QLabel(QStringLiteral("Brak wczytanego pliku."), graphic_tab);
+    file_path_label_ = new QLabel(trInk("Brak wczytanego pliku."), graphic_tab);
     file_path_label_->setWordWrap(true);
     gv->addWidget(file_path_label_);
 
-    auto* size_gb = new QGroupBox(QStringLiteral("Rozmiar grafiki"), graphic_tab);
+    auto* size_gb = new QGroupBox(trInk("Rozmiar grafiki"), graphic_tab);
     auto* size_form = new QFormLayout(size_gb);
     graphic_size_w_label_ = new QLabel(QStringLiteral("—"), size_gb);
     graphic_size_h_label_ = new QLabel(QStringLiteral("—"), size_gb);
@@ -400,14 +400,14 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     scale_pct_y_spin_->setValue(100);
     size_form->addRow(trInk("Szerokość"), graphic_size_w_label_);
     size_form->addRow(trInk("Wysokość"), graphic_size_h_label_);
-    size_form->addRow(QStringLiteral("Skala X"), scale_pct_x_spin_);
-    size_form->addRow(QStringLiteral("Skala Y"), scale_pct_y_spin_);
-    lock_scale_chk_ = new QCheckBox(QStringLiteral("Zablokuj proporcje"), size_gb);
+    size_form->addRow(trInk("Skala X"), scale_pct_x_spin_);
+    size_form->addRow(trInk("Skala Y"), scale_pct_y_spin_);
+    lock_scale_chk_ = new QCheckBox(trInk("Zablokuj proporcje"), size_gb);
     lock_scale_chk_->setChecked(true);
     size_form->addRow(lock_scale_chk_);
     gv->addWidget(size_gb);
 
-    auto* copies_gb = new QGroupBox(QStringLiteral("Kopie grafiki"), graphic_tab);
+    auto* copies_gb = new QGroupBox(trInk("Kopie grafiki"), graphic_tab);
     auto* copies_v = new QVBoxLayout(copies_gb);
     copies_spin_ = new QSpinBox(copies_gb);
     copies_spin_->setRange(1, 99999);
@@ -426,7 +426,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     copies_row->addWidget(remove_stack_btn_);
     copies_v->addLayout(copies_row);
     auto_copies_chk_ = new QCheckBox(trInk("Wypełnij rząd (auto copies)"), copies_gb);
-    auto_scale_chk_ = new QCheckBox(QStringLiteral("Dopasuj do obszaru (auto scale)"), copies_gb);
+    auto_scale_chk_ = new QCheckBox(trInk("Dopasuj do obszaru (auto scale)"), copies_gb);
     copies_v->addWidget(auto_copies_chk_);
     copies_v->addWidget(auto_scale_chk_);
     gv->addWidget(copies_gb);
@@ -443,7 +443,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     rot_form->addRow(auto_rotate_chk_);
     gv->addWidget(rot_gb);
 
-    auto* mir_gb = new QGroupBox(QStringLiteral("Lustrzane odbicie"), graphic_tab);
+    auto* mir_gb = new QGroupBox(trInk("Lustrzane odbicie"), graphic_tab);
     auto* mir_v = new QVBoxLayout(mir_gb);
     mirror_x_chk_ = new QCheckBox(trInk("Lustro względem osi X"), mir_gb);
     mirror_y_chk_ = new QCheckBox(trInk("Lustro względem osi Y"), mir_gb);
@@ -451,7 +451,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     mir_v->addWidget(mirror_y_chk_);
     gv->addWidget(mir_gb);
 
-    auto* pos_gb = new QGroupBox(QStringLiteral("Pozycja na materiale"), graphic_tab);
+    auto* pos_gb = new QGroupBox(trInk("Pozycja na materiale"), graphic_tab);
     auto* pos_form = new QFormLayout(pos_gb);
     layout_offset_x_spin_ = new QDoubleSpinBox(pos_gb);
     layout_offset_y_spin_ = new QDoubleSpinBox(pos_gb);
@@ -483,8 +483,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     auto* llv = new QVBoxLayout(layers_inner);
     llv->setSpacing(8);
     auto* layers_hint = new QLabel(
-        QStringLiteral("Zaznacz warstwę/kolor i ustaw × (przyciski −/+). "
-                       "Bez warstw Inkscape: „Cały dokument”."),
+        trInk("Zaznacz warstwę/kolor i ustaw × (przyciski −/+). "
+              "Bez warstw Inkscape: „Cały dokument”."),
         layers_inner);
     layers_hint->setWordWrap(true);
     llv->addWidget(layers_hint);
@@ -498,7 +498,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     fill_color_list_->setObjectName(QStringLiteral("filter_pass_list"));
     fill_color_list_->setSelectionMode(QAbstractItemView::NoSelection);
     llv->addWidget(fill_color_list_, 1);
-    llv->addWidget(new QLabel(QStringLiteral("Kolory obrysu"), layers_inner));
+    llv->addWidget(new QLabel(trInk("Kolory obrysu"), layers_inner));
     stroke_color_list_ = new QListWidget(layers_inner);
     stroke_color_list_->setObjectName(QStringLiteral("filter_pass_list"));
     stroke_color_list_->setSelectionMode(QAbstractItemView::NoSelection);
@@ -563,7 +563,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     copy_gap_x_spin_->setValue(10);
     copy_gap_y_spin_->setValue(10);
     spacing_form->addRow(trInk("Rząd"), copy_gap_x_spin_);
-    spacing_form->addRow(QStringLiteral("Kolumna"), copy_gap_y_spin_);
+    spacing_form->addRow(trInk("Kolumna"), copy_gap_y_spin_);
     wlv->addLayout(spacing_form);
 
     wlv->addWidget(new QLabel(trInk("Kolejność cięcia"), weedlines_tab));
@@ -590,7 +590,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     wlv->addWidget(plot_weedline_chk_);
     wlv->addWidget(copy_weedline_chk_);
 
-    wlv->addWidget(new QLabel(QStringLiteral("Margines weedline (plot)"), weedlines_tab));
+    wlv->addWidget(new QLabel(trInk("Margines weedline (plot)"), weedlines_tab));
     auto* plot_pad_grid = new QGridLayout();
     plot_pad_grid->setContentsMargins(0, 0, 0, 0);
     plot_pad_l_spin_ = make_mm_spin();
@@ -599,17 +599,17 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     plot_pad_b_spin_ = make_mm_spin();
     for (QDoubleSpinBox* s : {plot_pad_l_spin_, plot_pad_t_spin_, plot_pad_r_spin_, plot_pad_b_spin_})
         s->setValue(10);
-    plot_pad_grid->addWidget(new QLabel(QStringLiteral("Lewy"), weedlines_tab), 0, 0);
+    plot_pad_grid->addWidget(new QLabel(trInk("Lewy"), weedlines_tab), 0, 0);
     plot_pad_grid->addWidget(plot_pad_l_spin_, 0, 1);
     plot_pad_grid->addWidget(new QLabel(trInk("Górny"), weedlines_tab), 0, 2);
     plot_pad_grid->addWidget(plot_pad_t_spin_, 0, 3);
-    plot_pad_grid->addWidget(new QLabel(QStringLiteral("Prawy"), weedlines_tab), 1, 0);
+    plot_pad_grid->addWidget(new QLabel(trInk("Prawy"), weedlines_tab), 1, 0);
     plot_pad_grid->addWidget(plot_pad_r_spin_, 1, 1);
-    plot_pad_grid->addWidget(new QLabel(QStringLiteral("Dolny"), weedlines_tab), 1, 2);
+    plot_pad_grid->addWidget(new QLabel(trInk("Dolny"), weedlines_tab), 1, 2);
     plot_pad_grid->addWidget(plot_pad_b_spin_, 1, 3);
     wlv->addLayout(plot_pad_grid);
 
-    wlv->addWidget(new QLabel(QStringLiteral("Margines weedline (kopia)"), weedlines_tab));
+    wlv->addWidget(new QLabel(trInk("Margines weedline (kopia)"), weedlines_tab));
     auto* pad_grid = new QGridLayout();
     pad_grid->setContentsMargins(0, 0, 0, 0);
     copy_pad_l_spin_ = make_mm_spin();
@@ -619,13 +619,13 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     for (QDoubleSpinBox* s :
          {copy_pad_l_spin_, copy_pad_t_spin_, copy_pad_r_spin_, copy_pad_b_spin_})
         s->setValue(10);
-    pad_grid->addWidget(new QLabel(QStringLiteral("Lewy"), weedlines_tab), 0, 0);
+    pad_grid->addWidget(new QLabel(trInk("Lewy"), weedlines_tab), 0, 0);
     pad_grid->addWidget(copy_pad_l_spin_, 0, 1);
     pad_grid->addWidget(new QLabel(trInk("Górny"), weedlines_tab), 0, 2);
     pad_grid->addWidget(copy_pad_t_spin_, 0, 3);
-    pad_grid->addWidget(new QLabel(QStringLiteral("Prawy"), weedlines_tab), 1, 0);
+    pad_grid->addWidget(new QLabel(trInk("Prawy"), weedlines_tab), 1, 0);
     pad_grid->addWidget(copy_pad_r_spin_, 1, 1);
-    pad_grid->addWidget(new QLabel(QStringLiteral("Dolny"), weedlines_tab), 1, 2);
+    pad_grid->addWidget(new QLabel(trInk("Dolny"), weedlines_tab), 1, 2);
     pad_grid->addWidget(copy_pad_b_spin_, 1, 3);
     wlv->addLayout(pad_grid);
 
@@ -658,16 +658,15 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     connect(preset_combo_, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &MainWindow::onPresetChanged);
     transport_combo_ = new QComboBox(device_host_);
-    transport_combo_->addItem(QStringLiteral("Port szeregowy"),
+    transport_combo_->addItem(trInk("Port szeregowy"),
                               int(PlotTransportKind::SerialPort));
-    transport_combo_->addItem(QStringLiteral("Zapis do pliku"), int(PlotTransportKind::FileOutput));
-    transport_combo_->addItem(QStringLiteral("Drukarka (CUPS)"), int(PlotTransportKind::Printer));
+    transport_combo_->addItem(trInk("Zapis do pliku"), int(PlotTransportKind::FileOutput));
     connect(transport_combo_, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &MainWindow::onTransportChanged);
     port_edit_ = new QLineEdit(QStringLiteral("/dev/ttyUSB0"), device_host_);
     baud_spin_ = new QSpinBox(device_host_);
     baud_spin_->setRange(1200, 1000000);
-    baud_spin_->setValue(9600);
+    baud_spin_->setValue(115200);
     output_path_edit_ = new QLineEdit(device_host_);
     printer_edit_ = new QLineEdit(device_host_);
     plugin_combo_ = new QComboBox(device_host_);
@@ -687,9 +686,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     history_table_ = new QTableWidget(jobs_tab);
     history_table_->setColumnCount(9);
     history_table_->setHorizontalHeaderLabels(
-        {QStringLiteral("Data"), QStringLiteral("Dokument"), QStringLiteral("Liczba"),
-         QStringLiteral("Czas"), QStringLiteral("Status"), QStringLiteral("Kopie"),
-         trInk("Obrót"), QStringLiteral("Rozmiar"), trInk("Materiał")});
+        {trInk("Data"), trInk("Dokument"), trInk("Liczba"),
+         trInk("Czas"), trInk("Status"), trInk("Kopie"),
+         trInk("Obrót"), trInk("Rozmiar"), trInk("Materiał")});
     history_table_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     history_table_->horizontalHeader()->setStretchLastSection(true);
     history_table_->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -754,7 +753,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     applyLiveActionUi(UiIcons::LiveAction::Start);
     styleToolButton(live_abort_btn_, UiIcons::liveAction(UiIcons::LiveAction::Stop, this),
                     trInk("Przerwij wysyłkę"), false);
-    live_abort_btn_->setText(QStringLiteral("Przerwij"));
+    live_abort_btn_->setText(trInk("Przerwij"));
     prog_row->addWidget(live_progress_bar_, 1);
     prog_row->addWidget(live_abort_btn_);
     prog_row->addWidget(live_action_btn_);
@@ -773,9 +772,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     auto* monitor_tab = new QWidget(bottom_tabs_);
     auto* mv = new QVBoxLayout(monitor_tab);
     auto* mon_top = new QHBoxLayout();
-    monitor_log_send_chk_ = new QCheckBox(QStringLiteral("Loguj TX/RX"), monitor_tab);
+    monitor_log_send_chk_ = new QCheckBox(trInk("Loguj TX/RX"), monitor_tab);
     monitor_log_send_chk_->setChecked(true);
-    monitor_hex_chk_ = new QCheckBox(QStringLiteral("Hex"), monitor_tab);
+    monitor_hex_chk_ = new QCheckBox(trInk("Hex"), monitor_tab);
     auto* mon_clear = new QPushButton(monitor_tab);
     styleToolButton(mon_clear, UiIcons::clear(this), trInk("Wyczyść monitor"), false);
     mon_clear->setText(trInk("Wyczyść"));
@@ -805,7 +804,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     console_output_->appendPlainText(
         trInk("Konsola urządzenia — wpisz komendę (HPGL/G-code) i Enter."));
     console_input_ = new QLineEdit(console_tab);
-    console_input_->setPlaceholderText(QStringLiteral("np. PG; lub G0 X10 Y10"));
+    console_input_->setPlaceholderText(trInk("np. PG; lub G0 X10 Y10"));
     connect(console_input_, &QLineEdit::returnPressed, this, &MainWindow::onConsoleCommand);
     cv->addWidget(console_output_, 1);
     cv->addWidget(console_input_);
@@ -819,7 +818,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     auto* main_row = new QHBoxLayout();
     auto* directions = new QWidget(control_tab_);
     auto* dir_v = new QVBoxLayout(directions);
-    dir_v->addWidget(new QLabel(QStringLiteral("Sterowanie")));
+    dir_v->addWidget(new QLabel(trInk("Sterowanie")));
     control_grid_ = new QGridLayout();
     control_grid_->setSpacing(metricsFor(app_settings_.ui_profile).control_grid_spacing);
 
@@ -902,7 +901,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
     main_row->addWidget(directions);
 
-    auto* status_box = new QGroupBox(QStringLiteral("Status"), control_tab_);
+    auto* status_box = new QGroupBox(trInk("Status"), control_tab_);
     auto* status_form = new QFormLayout(status_box);
     auto* device_lbl = new QLabel(port_edit_->text(), status_box);
     device_lbl->setWordWrap(true);
@@ -1196,7 +1195,7 @@ void MainWindow::updateFilePathLabel()
     if (!file_path_label_)
         return;
     if (current_file_.isEmpty())
-        file_path_label_->setText(QStringLiteral("Brak wczytanego pliku."));
+        file_path_label_->setText(trInk("Brak wczytanego pliku."));
     else
         file_path_label_->setText(QFileInfo(current_file_).absoluteFilePath());
 }
@@ -1302,7 +1301,7 @@ void MainWindow::onLiveListenToggled(bool on)
     stopControlConnection();
 
     live_serial_ = std::make_unique<QSerialPort>();
-    SerialOpenOptions opt;
+    SerialOpenOptions opt = serial_open_options_from_device(active_device_);
     opt.port_name = port_edit_->text();
     opt.baud_rate = baud_spin_->value();
 
@@ -1382,8 +1381,9 @@ bool MainWindow::sendControlMove(double x, double y, double z)
         return false;
     }
 
+    const bool prev_pen_up = (control_z_ < 0.5);
     const std::string cmd =
-        encode_move_absolute_user_xy(x, y, z, collectJobSettings().protocol);
+        encode_move_absolute_user_xy(x, y, z, collectJobSettings().protocol, prev_pen_up);
     const QByteArray bytes = QByteArray::fromStdString(cmd);
 
     if (monitor_log_send_chk_->isChecked())
@@ -1428,7 +1428,7 @@ void MainWindow::onControlConnectToggle()
     stopLiveListen();
 
     control_serial_ = std::make_unique<QSerialPort>();
-    SerialOpenOptions opt;
+    SerialOpenOptions opt = serial_open_options_from_device(active_device_);
     opt.port_name = port_edit_->text();
     opt.baud_rate = baud_spin_->value();
 
@@ -1850,7 +1850,7 @@ void MainWindow::onExportProgram()
     }
 
     const QString out_path =
-        QFileDialog::getSaveFileName(this, QStringLiteral("Zapisz"), QStringLiteral("job.hpgl"),
+        QFileDialog::getSaveFileName(this, trInk("Zapisz"), QStringLiteral("job.hpgl"),
                                      QStringLiteral("Program (*.hpgl *.plt *.txt);;Wszystkie (*)"));
     if (out_path.isEmpty())
         return;
@@ -1994,7 +1994,7 @@ void MainWindow::onSend()
         recordJobHistory(tr.ok ? JobRunStatus::Complete : JobRunStatus::Error, tr.bytes_written,
                          tr.error_message);
         if (tr.ok)
-            QMessageBox::information(this, QStringLiteral("Inkcut"), QStringLiteral("Zapisano."));
+            QMessageBox::information(this, QStringLiteral("Inkcut"), trInk("Zapisano."));
         else
             QMessageBox::warning(this, QStringLiteral("Inkcut"), tr.error_message);
         return;
@@ -2521,8 +2521,11 @@ void MainWindow::applyJobSettingsToUi(const PlotJobSettings& job)
 
     preset_combo_->setCurrentIndex(
         std::max(0, preset_combo_->findData(job.device.preset_id)));
-    transport_combo_->setCurrentIndex(
-        transport_combo_->findData(int(job.device.transport)));
+    PlotTransportKind transport = job.device.transport;
+    if (transport == PlotTransportKind::Printer)
+        transport = PlotTransportKind::SerialPort;
+    const int tidx = transport_combo_->findData(int(transport));
+    transport_combo_->setCurrentIndex(tidx >= 0 ? tidx : 0);
     port_edit_->setText(job.device.port_name);
     baud_spin_->setValue(job.device.baud_rate);
     output_path_edit_->setText(job.device.output_path);
@@ -2579,12 +2582,9 @@ void MainWindow::onTransportChanged(int)
 {
     const auto kind =
         static_cast<PlotTransportKind>(transport_combo_->currentData().toInt());
-    const bool file_like =
-        kind == PlotTransportKind::FileOutput || kind == PlotTransportKind::Printer;
+    const bool file_out = kind == PlotTransportKind::FileOutput;
     if (output_path_edit_)
-        output_path_edit_->setVisible(file_like);
-    if (printer_edit_)
-        printer_edit_->setVisible(kind == PlotTransportKind::Printer);
+        output_path_edit_->setVisible(file_out);
     port_edit_->setEnabled(kind == PlotTransportKind::SerialPort);
     baud_spin_->setEnabled(kind == PlotTransportKind::SerialPort);
 }
@@ -2820,7 +2820,7 @@ bool MainWindow::confirmSendApproval(const PlotJobSettings& job, const QPainterP
     form->addRow(QStringLiteral("Plik"), new QLabel(QFileInfo(current_file_).fileName()));
     form->addRow(trInk("Protokół"),
                  new QLabel(plotProtocolToCli(job.protocol.protocol)));
-    form->addRow(QStringLiteral("Kopie"), new QLabel(QString::number(job.layout.copies)));
+    form->addRow(trInk("Kopie"), new QLabel(QString::number(job.layout.copies)));
     form->addRow(trInk("Materiał"),
                  new QLabel(QStringLiteral("%1 × %2")
                                 .arg(job.material.width)

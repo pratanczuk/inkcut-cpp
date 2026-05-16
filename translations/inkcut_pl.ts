@@ -5,719 +5,719 @@
     <name>Inkcut</name>
     <message>
         <source>(nie wysłano — brak połączenia lub błąd)</source>
-        <translation>(nie wysłano — brak połączenia lub błąd)</translation>
+        <translation type="vanished">(nie wysłano — brak połączenia lub błąd)</translation>
     </message>
     <message>
         <source>Aktywne urządzenie: %1</source>
-        <translation>Aktywne urządzenie: %1</translation>
+        <translation type="vanished">Aktywne urządzenie: %1</translation>
     </message>
     <message>
         <source>Anulowano przez użytkownika.</source>
-        <translation>Anulowano przez użytkownika.</translation>
+        <translation type="vanished">Anulowano przez użytkownika.</translation>
     </message>
     <message>
         <source>Auto</source>
-        <translation>Auto</translation>
+        <translation type="vanished">Auto</translation>
     </message>
     <message>
         <source>Automatyczne usuwanie szumu</source>
-        <translation>Automatyczne usuwanie szumu</translation>
+        <translation type="vanished">Automatyczne usuwanie szumu</translation>
     </message>
     <message>
         <source>Automatyczny turdsize</source>
-        <translation>Automatyczny turdsize</translation>
+        <translation type="vanished">Automatyczny turdsize</translation>
     </message>
     <message>
         <source>Brak komendy — ustaw ją w Ustawienia → Sterowanie → Załaduj/Wyładuj materiał.</source>
-        <translation>Brak komendy — ustaw ją w Ustawienia → Sterowanie → Załaduj/Wyładuj materiał.</translation>
+        <translation type="vanished">Brak komendy — ustaw ją w Ustawienia → Sterowanie → Załaduj/Wyładuj materiał.</translation>
     </message>
     <message>
         <source>Brak ścieżki — zmień parametry.</source>
-        <translation>Brak ścieżki — zmień parametry.</translation>
+        <translation type="vanished">Brak ścieżki — zmień parametry.</translation>
     </message>
     <message>
         <source>Cały dokument</source>
-        <translation>Cały dokument</translation>
+        <translation type="vanished">Cały dokument</translation>
     </message>
     <message>
         <source>DXF: jedna warstwa „Cały dokument”. Filtry kolorów tylko dla SVG.</source>
-        <translation>DXF: jedna warstwa „Cały dokument”. Filtry kolorów tylko dla SVG.</translation>
+        <translation type="vanished">DXF: jedna warstwa „Cały dokument”. Filtry kolorów tylko dla SVG.</translation>
     </message>
     <message>
         <source>Dodaj rząd kopii</source>
-        <translation>Dodaj rząd kopii</translation>
+        <translation type="vanished">Dodaj rząd kopii</translation>
     </message>
     <message>
         <source>Dodaj weedline do całego plotu</source>
-        <translation>Dodaj weedline do całego plotu</translation>
+        <translation type="vanished">Dodaj weedline do całego plotu</translation>
     </message>
     <message>
         <source>Dodaj weedline wokół kopii</source>
-        <translation>Dodaj weedline wokół kopii</translation>
+        <translation type="vanished">Dodaj weedline wokół kopii</translation>
     </message>
     <message>
         <source>Domyka cienkie białe szczeliny wewnątrz kształtu (np. linie na głowie logo). 2–3 px zwykle wystarcza.</source>
-        <translation>Domyka cienkie białe szczeliny wewnątrz kształtu (np. linie na głowie logo). 2–3 px zwykle wystarcza.</translation>
+        <translation type="vanished">Domyka cienkie białe szczeliny wewnątrz kształtu (np. linie na głowie logo). 2–3 px zwykle wystarcza.</translation>
     </message>
     <message>
         <source>Domyślne jednostki</source>
-        <translation>Domyślne jednostki</translation>
+        <translation type="vanished">Domyślne jednostki</translation>
     </message>
     <message>
         <source>Dopasuj cały rysunek do okna</source>
-        <translation>Dopasuj cały rysunek do okna</translation>
+        <translation type="vanished">Dopasuj cały rysunek do okna</translation>
     </message>
     <message>
         <source>Dopełnianie linii (HPGL pad)</source>
-        <translation>Dopełnianie linii (HPGL pad)</translation>
+        <translation type="vanished">Dopełnianie linii (HPGL pad)</translation>
     </message>
     <message>
         <source>Dostępne urządzenia</source>
-        <translation>Dostępne urządzenia</translation>
+        <translation type="vanished">Dostępne urządzenia</translation>
     </message>
     <message>
         <source>Długość</source>
-        <translation>Długość</translation>
+        <translation type="vanished">Długość</translation>
     </message>
     <message>
         <source>Filtr tła:</source>
-        <translation>Filtr tła:</translation>
+        <translation type="vanished">Filtr tła:</translation>
     </message>
     <message>
         <source>G-code opuszczenia (tryb Własne)</source>
-        <translation>G-code opuszczenia (tryb Własne)</translation>
+        <translation type="vanished">G-code opuszczenia (tryb Własne)</translation>
     </message>
     <message>
         <source>G-code podniesienia (tryb Własne)</source>
-        <translation>G-code podniesienia (tryb Własne)</translation>
+        <translation type="vanished">G-code podniesienia (tryb Własne)</translation>
     </message>
     <message>
         <source>Grafika</source>
-        <translation>Grafika</translation>
+        <translation type="vanished">Grafika</translation>
     </message>
     <message>
         <source>Górny</source>
-        <translation>Górny</translation>
+        <translation type="vanished">Górny</translation>
     </message>
     <message>
         <source>Import bitmapy — parametry</source>
-        <translation>Import bitmapy — parametry</translation>
+        <translation type="vanished">Import bitmapy — parametry</translation>
     </message>
     <message>
         <source>Import bitmapy…</source>
-        <translation>Import bitmapy…</translation>
+        <translation type="vanished">Import bitmapy…</translation>
     </message>
     <message>
         <source>Jak mkbitmap -t (np. 0.48). Niższy = więcej czerni.</source>
-        <translation>Jak mkbitmap -t (np. 0.48). Niższy = więcej czerni.</translation>
+        <translation type="vanished">Jak mkbitmap -t (np. 0.48). Niższy = więcej czerni.</translation>
     </message>
     <message>
         <source>Jakość</source>
-        <translation>Jakość</translation>
+        <translation type="vanished">Jakość</translation>
     </message>
     <message>
         <source>Język</source>
-        <translation>Język</translation>
+        <translation type="vanished">Język</translation>
     </message>
     <message>
         <source>Kolejność cięcia</source>
-        <translation>Kolejność cięcia</translation>
+        <translation type="vanished">Kolejność cięcia</translation>
     </message>
     <message>
         <source>Kolory wypełnienia</source>
-        <translation>Kolory wypełnienia</translation>
+        <translation type="vanished">Kolory wypełnienia</translation>
     </message>
     <message>
         <source>Konfiguracja urządzenia — Inkcut</source>
-        <translation>Konfiguracja urządzenia — Inkcut</translation>
+        <translation type="vanished">Konfiguracja urządzenia — Inkcut</translation>
     </message>
     <message>
         <source>Konfiguracja urządzenia…</source>
-        <translation>Konfiguracja urządzenia…</translation>
+        <translation type="vanished">Konfiguracja urządzenia…</translation>
     </message>
     <message>
         <source>Konsola</source>
-        <translation>Konsola</translation>
+        <translation type="vanished">Konsola</translation>
     </message>
     <message>
         <source>Konsola urządzenia — wpisz komendę (HPGL/G-code) i Enter.</source>
-        <translation>Konsola urządzenia — wpisz komendę (HPGL/G-code) i Enter.</translation>
+        <translation type="vanished">Konsola urządzenia — wpisz komendę (HPGL/G-code) i Enter.</translation>
     </message>
     <message>
         <source>Krok próbkowania</source>
-        <translation>Krok próbkowania</translation>
+        <translation type="vanished">Krok próbkowania</translation>
     </message>
     <message>
         <source>Kąt odcięcia</source>
-        <translation>Kąt odcięcia</translation>
+        <translation type="vanished">Kąt odcięcia</translation>
     </message>
     <message>
         <source>Liczba przejść plotera (np. twardy materiał)</source>
-        <translation>Liczba przejść plotera (np. twardy materiał)</translation>
+        <translation type="vanished">Liczba przejść plotera (np. twardy materiał)</translation>
     </message>
     <message>
         <source>Linie tnące</source>
-        <translation>Linie tnące</translation>
+        <translation type="vanished">Linie tnące</translation>
     </message>
     <message>
         <source>Live</source>
-        <translation>Na żywo</translation>
+        <translation type="vanished">Na żywo</translation>
     </message>
     <message>
         <source>Lub przeciągnij grafikę w podglądzie.</source>
-        <translation>Lub przeciągnij grafikę w podglądzie.</translation>
+        <translation type="vanished">Lub przeciągnij grafikę w podglądzie.</translation>
     </message>
     <message>
         <source>Lustro względem osi X</source>
-        <translation>Lustro względem osi X</translation>
+        <translation type="vanished">Lustro względem osi X</translation>
     </message>
     <message>
         <source>Lustro względem osi Y</source>
-        <translation>Lustro względem osi Y</translation>
+        <translation type="vanished">Lustro względem osi Y</translation>
     </message>
     <message>
         <source>Materiał</source>
-        <translation>Materiał</translation>
+        <translation type="vanished">Materiał</translation>
     </message>
     <message>
         <source>Materiał na rolce</source>
-        <translation>Materiał na rolce</translation>
+        <translation type="vanished">Materiał na rolce</translation>
     </message>
     <message>
         <source>Max. luka zamknięcia</source>
-        <translation>Max. luka zamknięcia</translation>
+        <translation type="vanished">Max. luka zamknięcia</translation>
     </message>
     <message>
         <source>Min. krawędź</source>
-        <translation>Min. krawędź</translation>
+        <translation type="vanished">Min. krawędź</translation>
     </message>
     <message>
         <source>Min. plamka:</source>
-        <translation>Min. plamka:</translation>
+        <translation type="vanished">Min. plamka:</translation>
     </message>
     <message>
         <source>Min. przesunięcie</source>
-        <translation>Min. przesunięcie</translation>
+        <translation type="vanished">Min. przesunięcie</translation>
     </message>
     <message>
         <source>Min. ścieżka</source>
-        <translation>Min. ścieżka</translation>
+        <translation type="vanished">Min. ścieżka</translation>
     </message>
     <message>
         <source>Monitor</source>
-        <translation>Monitor</translation>
+        <translation type="vanished">Monitor</translation>
     </message>
     <message>
         <source>Motyw i język: restart aplikacji. Profil interfejsu stosuje się od razu po OK.</source>
-        <translation>Motyw i język: restart aplikacji. Profil interfejsu stosuje się od razu po OK.</translation>
+        <translation type="vanished">Motyw i język: restart aplikacji. Profil interfejsu stosuje się od razu po OK.</translation>
     </message>
     <message>
         <source>Najkrótsza ścieżka</source>
-        <translation>Najkrótsza ścieżka</translation>
+        <translation type="vanished">Najkrótsza ścieżka</translation>
     </message>
     <message>
         <source>Najpierw połącz się z ploterem (przycisk połączenia).</source>
-        <translation>Najpierw połącz się z ploterem (przycisk połączenia).</translation>
+        <translation type="vanished">Najpierw połącz się z ploterem (przycisk połączenia).</translation>
     </message>
     <message>
         <source>Nasłuch portu (tylko odczyt)</source>
-        <translation>Nasłuch portu (tylko odczyt)</translation>
+        <translation type="vanished">Nasłuch portu (tylko odczyt)</translation>
     </message>
     <message>
         <source>Nie można otworzyć pliku DXF.</source>
-        <translation>Nie można otworzyć pliku DXF.</translation>
+        <translation type="vanished">Nie można otworzyć pliku DXF.</translation>
     </message>
     <message>
         <source>Nie można otworzyć pliku.</source>
-        <translation>Nie można otworzyć pliku.</translation>
+        <translation type="vanished">Nie można otworzyć pliku.</translation>
     </message>
     <message>
         <source>Nie można otworzyć portu %1</source>
-        <translation>Nie można otworzyć portu %1</translation>
+        <translation type="vanished">Nie można otworzyć portu %1</translation>
     </message>
     <message>
         <source>Nie można otworzyć portu do nasłuchu.</source>
-        <translation>Nie można otworzyć portu do nasłuchu.</translation>
+        <translation type="vanished">Nie można otworzyć portu do nasłuchu.</translation>
     </message>
     <message>
         <source>Nie można wczytać obrazu.</source>
-        <translation>Nie można wczytać obrazu.</translation>
+        <translation type="vanished">Nie można wczytać obrazu.</translation>
     </message>
     <message>
         <source>Nowe urządzenie</source>
-        <translation>Nowe urządzenie</translation>
+        <translation type="vanished">Nowe urządzenie</translation>
     </message>
     <message>
         <source>Obrót</source>
-        <translation>Obrót</translation>
+        <translation type="vanished">Obrót</translation>
     </message>
     <message>
         <source>Obrót grafiki</source>
-        <translation>Obrót grafiki</translation>
+        <translation type="vanished">Obrót grafiki</translation>
     </message>
     <message>
         <source>Obróć aby zaoszczędzić miejsce</source>
-        <translation>Obróć aby zaoszczędzić miejsce</translation>
+        <translation type="vanished">Obróć aby zaoszczędzić miejsce</translation>
     </message>
     <message>
         <source>Odstęp grafiki</source>
-        <translation>Odstęp grafiki</translation>
+        <translation type="vanished">Odstęp grafiki</translation>
     </message>
     <message>
         <source>Odwrócona</source>
-        <translation>Odwrócona</translation>
+        <translation type="vanished">Odwrócona</translation>
     </message>
     <message>
         <source>Odwróć jasność (ciemne tło)</source>
-        <translation>Odwróć jasność (ciemne tło)</translation>
+        <translation type="vanished">Odwróć jasność (ciemne tło)</translation>
     </message>
     <message>
         <source>Odśwież</source>
-        <translation>Odśwież</translation>
+        <translation type="vanished">Odśwież</translation>
     </message>
     <message>
         <source>Odśwież listę wtyczek urządzeń</source>
-        <translation>Odśwież listę wtyczek urządzeń</translation>
+        <translation type="vanished">Odśwież listę wtyczek urządzeń</translation>
     </message>
     <message>
         <source>Odśwież wtyczki</source>
-        <translation>Odśwież wtyczki</translation>
+        <translation type="vanished">Odśwież wtyczki</translation>
     </message>
     <message>
         <source>Ogólne</source>
-        <translation>Ogólne</translation>
+        <translation type="vanished">Ogólne</translation>
     </message>
     <message>
         <source>Ogólny</source>
-        <translation>Ogólny</translation>
+        <translation type="vanished">Ogólny</translation>
     </message>
     <message>
         <source>Opuść głowicę (pen down)</source>
-        <translation>Opuść głowicę (pen down)</translation>
+        <translation type="vanished">Opuść głowicę (pen down)</translation>
     </message>
     <message>
         <source>Otwórz SVG / DXF…</source>
-        <translation>Otwórz SVG / DXF…</translation>
+        <translation type="vanished">Otwórz SVG / DXF…</translation>
     </message>
     <message>
         <source>Otwórz zadanie</source>
-        <translation>Otwórz zadanie</translation>
+        <translation type="vanished">Otwórz zadanie</translation>
     </message>
     <message>
         <source>Oś Z</source>
-        <translation>Oś Z</translation>
+        <translation type="vanished">Oś Z</translation>
     </message>
     <message>
         <source>Parametry</source>
-        <translation>Parametry</translation>
+        <translation type="vanished">Parametry</translation>
     </message>
     <message>
         <source>Plik</source>
-        <translation>Plik</translation>
+        <translation type="vanished">Plik</translation>
     </message>
     <message>
         <source>Plik wyjściowy</source>
-        <translation>Plik wyjściowy</translation>
+        <translation type="vanished">Plik wyjściowy</translation>
     </message>
     <message>
         <source>Po połączeniu</source>
-        <translation>Po połączeniu</translation>
+        <translation type="vanished">Po połączeniu</translation>
     </message>
     <message>
         <source>Po połączeniu (np. G21\\n)</source>
-        <translation>Po połączeniu (np. G21\\n)</translation>
+        <translation type="vanished">Po połączeniu (np. G21\\n)</translation>
     </message>
     <message>
         <source>Podawanie materiału</source>
-        <translation>Podawanie materiału</translation>
+        <translation type="vanished">Podawanie materiału</translation>
     </message>
     <message>
         <source>Podgląd</source>
-        <translation>Podgląd</translation>
+        <translation type="vanished">Podgląd</translation>
     </message>
     <message>
         <source>Podgląd (Preview)</source>
-        <translation>Podgląd (Preview)</translation>
+        <translation type="vanished">Podgląd (Preview)</translation>
     </message>
     <message>
         <source>Podgląd = ten sam pipeline co import. Cienkie białe linie wewnątrz sylwetki (np. logo): „Zamknij szczeliny” 2–3 px, ewentualnie „Wypełnij dziury” 100–500.</source>
-        <translation>Podgląd = ten sam pipeline co import. Cienkie białe linie wewnątrz sylwetki (np. logo): „Zamknij szczeliny” 2–3 px, ewentualnie „Wypełnij dziury” 100–500.</translation>
+        <translation type="vanished">Podgląd = ten sam pipeline co import. Cienkie białe linie wewnątrz sylwetki (np. logo): „Zamknij szczeliny” 2–3 px, ewentualnie „Wypełnij dziury” 100–500.</translation>
     </message>
     <message>
         <source>Podgląd wektoryzacji</source>
-        <translation>Podgląd wektoryzacji</translation>
+        <translation type="vanished">Podgląd wektoryzacji</translation>
     </message>
     <message>
         <source>Podnieś głowicę (pen up)</source>
-        <translation>Podnieś głowicę (pen up)</translation>
+        <translation type="vanished">Podnieś głowicę (pen up)</translation>
     </message>
     <message>
         <source>Podnoszenie narzędzia</source>
-        <translation>Podnoszenie narzędzia</translation>
+        <translation type="vanished">Podnoszenie narzędzia</translation>
     </message>
     <message>
         <source>Pokaż całość</source>
-        <translation>Pokaż całość</translation>
+        <translation type="vanished">Pokaż całość</translation>
     </message>
     <message>
         <source>Pomniejsz widok (kółko myszy też działa)</source>
-        <translation>Pomniejsz widok (kółko myszy też działa)</translation>
+        <translation type="vanished">Pomniejsz widok (kółko myszy też działa)</translation>
     </message>
     <message>
         <source>Pomoc</source>
-        <translation>Pomoc</translation>
+        <translation type="vanished">Pomoc</translation>
     </message>
     <message>
         <source>Port / urządzenie</source>
-        <translation>Port / urządzenie</translation>
+        <translation type="vanished">Port / urządzenie</translation>
     </message>
     <message>
         <source>Potrace -t: usuwa drobne plamki (w pikselach).</source>
-        <translation>Potrace -t: usuwa drobne plamki (w pikselach).</translation>
+        <translation type="vanished">Potrace -t: usuwa drobne plamki (w pikselach).</translation>
     </message>
     <message>
         <source>Potrace nie zwrócił ścieżki.</source>
-        <translation>Potrace nie zwrócił ścieżki.</translation>
+        <translation type="vanished">Potrace nie zwrócił ścieżki.</translation>
     </message>
     <message>
         <source>Powiększ widok (kółko myszy też działa)</source>
-        <translation>Powiększ widok (kółko myszy też działa)</translation>
+        <translation type="vanished">Powiększ widok (kółko myszy też działa)</translation>
     </message>
     <message>
         <source>Powrót do początku</source>
-        <translation>Powrót do początku</translation>
+        <translation type="vanished">Powrót do początku</translation>
     </message>
     <message>
         <source>Powtórzenia</source>
-        <translation>Powtórzenia</translation>
+        <translation type="vanished">Powtórzenia</translation>
     </message>
     <message>
         <source>Powtórzenia (cały job)</source>
-        <translation>Powtórzenia (cały job)</translation>
+        <translation type="vanished">Powtórzenia (cały job)</translation>
     </message>
     <message>
         <source>Pozycja: (x=%1, y=%2, z=%3)  Początek: (x=%4, y=%5)  %6</source>
-        <translation>Pozycja: (x=%1, y=%2, z=%3)  Początek: (x=%4, y=%5)  %6</translation>
+        <translation type="vanished">Pozycja: (x=%1, y=%2, z=%3)  Początek: (x=%4, y=%5)  %6</translation>
     </message>
     <message>
         <source>Połącz z ploterem</source>
-        <translation>Połącz z ploterem</translation>
+        <translation type="vanished">Połącz z ploterem</translation>
     </message>
     <message>
         <source>Połączenie</source>
-        <translation>Połączenie</translation>
+        <translation type="vanished">Połączenie</translation>
     </message>
     <message>
         <source>Protokół</source>
-        <translation>Protokół</translation>
+        <translation type="vanished">Protokół</translation>
     </message>
     <message>
         <source>Przed cięciem</source>
-        <translation>Przed cięciem</translation>
+        <translation type="vanished">Przed cięciem</translation>
     </message>
     <message>
         <source>Przeliczanie podglądu…</source>
-        <translation>Przeliczanie podglądu…</translation>
+        <translation type="vanished">Przeliczanie podglądu…</translation>
     </message>
     <message>
         <source>Przerwij wysyłkę</source>
-        <translation>Przerwij wysyłkę</translation>
+        <translation type="vanished">Przerwij wysyłkę</translation>
     </message>
     <message>
         <source>Przerwij zadanie</source>
-        <translation>Przerwij zadanie</translation>
+        <translation type="vanished">Przerwij zadanie</translation>
     </message>
     <message>
         <source>Przesunięcie X</source>
-        <translation>Przesunięcie X</translation>
+        <translation type="vanished">Przesunięcie X</translation>
     </message>
     <message>
         <source>Przesunięcie Y</source>
-        <translation>Przesunięcie Y</translation>
+        <translation type="vanished">Przesunięcie Y</translation>
     </message>
     <message>
         <source>Przesuń do początku</source>
-        <translation>Przesuń do początku</translation>
+        <translation type="vanished">Przesuń do początku</translation>
     </message>
     <message>
         <source>Przesuń w dół</source>
-        <translation>Przesuń w dół</translation>
+        <translation type="vanished">Przesuń w dół</translation>
     </message>
     <message>
         <source>Przesuń w górę</source>
-        <translation>Przesuń w górę</translation>
+        <translation type="vanished">Przesuń w górę</translation>
     </message>
     <message>
         <source>Przesuń w lewo</source>
-        <translation>Przesuń w lewo</translation>
+        <translation type="vanished">Przesuń w lewo</translation>
     </message>
     <message>
         <source>Przesuń w prawo</source>
-        <translation>Przesuń w prawo</translation>
+        <translation type="vanished">Przesuń w prawo</translation>
     </message>
     <message>
         <source>Przezroczystość</source>
-        <translation>Przezroczystość</translation>
+        <translation type="vanished">Przezroczystość</translation>
     </message>
     <message>
         <source>Próg automatyczny (Otsu + 0.48)</source>
-        <translation>Próg automatyczny (Otsu + 0.48)</translation>
+        <translation type="vanished">Próg automatyczny (Otsu + 0.48)</translation>
     </message>
     <message>
         <source>Próg zamknięcia</source>
-        <translation>Próg zamknięcia</translation>
+        <translation type="vanished">Próg zamknięcia</translation>
     </message>
     <message>
         <source>Próg:</source>
-        <translation>Próg:</translation>
+        <translation type="vanished">Próg:</translation>
     </message>
     <message>
         <source>Prędk.</source>
-        <translation>Prędk.</translation>
+        <translation type="vanished">Prędk.</translation>
     </message>
     <message>
         <source>Prędkość (VS/!V)</source>
-        <translation>Prędkość (VS/!V)</translation>
+        <translation type="vanished">Prędkość (VS/!V)</translation>
     </message>
     <message>
         <source>Rozmiar cięcia</source>
-        <translation>Rozmiar cięcia</translation>
+        <translation type="vanished">Rozmiar cięcia</translation>
     </message>
     <message>
         <source>Rozłącz od plotera</source>
-        <translation>Rozłącz od plotera</translation>
+        <translation type="vanished">Rozłącz od plotera</translation>
     </message>
     <message>
         <source>Rząd</source>
-        <translation>Rząd</translation>
+        <translation type="vanished">Rząd</translation>
     </message>
     <message>
         <source>SVG — ostrzeżenia</source>
-        <translation>SVG — ostrzeżenia</translation>
+        <translation type="vanished">SVG — ostrzeżenia</translation>
     </message>
     <message>
         <source>Siła</source>
-        <translation>Siła</translation>
+        <translation type="vanished">Siła</translation>
     </message>
     <message>
         <source>Skala wyjścia</source>
-        <translation>Skala wyjścia</translation>
+        <translation type="vanished">Skala wyjścia</translation>
     </message>
     <message>
         <source>Skalowanie:</source>
-        <translation>Skalowanie:</translation>
+        <translation type="vanished">Skalowanie:</translation>
     </message>
     <message>
         <source>Sterowanie</source>
-        <translation>Sterowanie</translation>
+        <translation type="vanished">Sterowanie</translation>
     </message>
     <message>
         <source>Szerokość</source>
-        <translation>Szerokość</translation>
+        <translation type="vanished">Szerokość</translation>
     </message>
     <message>
         <source>Turdsize:</source>
-        <translation>Turdsize:</translation>
+        <translation type="vanished">Turdsize:</translation>
     </message>
     <message>
         <source>Urządzenie</source>
-        <translation>Urządzenie</translation>
+        <translation type="vanished">Urządzenie</translation>
     </message>
     <message>
         <source>Ustaw wirtualny początek</source>
-        <translation>Ustaw wirtualny początek</translation>
+        <translation type="vanished">Ustaw wirtualny początek</translation>
     </message>
     <message>
         <source>Ustawienia</source>
-        <translation>Ustawienia</translation>
+        <translation type="vanished">Ustawienia</translation>
     </message>
     <message>
         <source>Usuń</source>
-        <translation>Usuń</translation>
+        <translation type="vanished">Usuń</translation>
     </message>
     <message>
         <source>Usuń ostatni rząd kopii</source>
-        <translation>Usuń ostatni rząd kopii</translation>
+        <translation type="vanished">Usuń ostatni rząd kopii</translation>
     </message>
     <message>
         <source>Usuń z listy</source>
-        <translation>Usuń z listy</translation>
+        <translation type="vanished">Usuń z listy</translation>
     </message>
     <message>
         <source>Warstwy</source>
-        <translation>Warstwy</translation>
+        <translation type="vanished">Warstwy</translation>
     </message>
     <message>
         <source>Wektoryzacja bitmapy…</source>
-        <translation>Wektoryzacja bitmapy…</translation>
+        <translation type="vanished">Wektoryzacja bitmapy…</translation>
     </message>
     <message>
         <source>Wróć do początku systemu (0,0)</source>
-        <translation>Wróć do początku systemu (0,0)</translation>
+        <translation type="vanished">Wróć do początku systemu (0,0)</translation>
     </message>
     <message>
         <source>Wróć do wirtualnego początku</source>
-        <translation>Wróć do wirtualnego początku</translation>
+        <translation type="vanished">Wróć do wirtualnego początku</translation>
     </message>
     <message>
         <source>Wyczyść</source>
-        <translation>Wyczyść</translation>
+        <translation type="vanished">Wyczyść</translation>
     </message>
     <message>
         <source>Wyczyść monitor</source>
-        <translation>Wyczyść monitor</translation>
+        <translation type="vanished">Wyczyść monitor</translation>
     </message>
     <message>
         <source>Wyczyść wykres</source>
-        <translation>Wyczyść wykres</translation>
+        <translation type="vanished">Wyczyść wykres</translation>
     </message>
     <message>
         <source>Wypełnia zamknięte białe dziury o podanej powierzchni (w px). Użyj po „Zamknij szczeliny”, jeśli zostały małe oczka.</source>
-        <translation>Wypełnia zamknięte białe dziury o podanej powierzchni (w px). Użyj po „Zamknij szczeliny”, jeśli zostały małe oczka.</translation>
+        <translation type="vanished">Wypełnia zamknięte białe dziury o podanej powierzchni (w px). Użyj po „Zamknij szczeliny”, jeśli zostały małe oczka.</translation>
     </message>
     <message>
         <source>Wypełnij dziury:</source>
-        <translation>Wypełnij dziury:</translation>
+        <translation type="vanished">Wypełnij dziury:</translation>
     </message>
     <message>
         <source>Wypełnij rząd (auto copies)</source>
-        <translation>Wypełnij rząd (auto copies)</translation>
+        <translation type="vanished">Wypełnij rząd (auto copies)</translation>
     </message>
     <message>
         <source>Wyrównanie plotowania</source>
-        <translation>Wyrównanie plotowania</translation>
+        <translation type="vanished">Wyrównanie plotowania</translation>
     </message>
     <message>
         <source>Wysokość</source>
-        <translation>Wysokość</translation>
+        <translation type="vanished">Wysokość</translation>
     </message>
     <message>
         <source>Wysłano.</source>
-        <translation>Wysłano.</translation>
+        <translation type="vanished">Wysłano.</translation>
     </message>
     <message>
         <source>Wyładuj</source>
-        <translation>Wyładuj</translation>
+        <translation type="vanished">Wyładuj</translation>
     </message>
     <message>
         <source>Wyładuj materiał</source>
-        <translation>Wyładuj materiał</translation>
+        <translation type="vanished">Wyładuj materiał</translation>
     </message>
     <message>
         <source>Wyładuj materiał z plotera (komenda z ustawień)</source>
-        <translation>Wyładuj materiał z plotera (komenda z ustawień)</translation>
+        <translation type="vanished">Wyładuj materiał z plotera (komenda z ustawień)</translation>
     </message>
     <message>
         <source>Wyłącz „Nasłuch na żywo”, aby zwolnić port na wysyłkę.</source>
-        <translation>Wyłącz „Nasłuch na żywo”, aby zwolnić port na wysyłkę.</translation>
+        <translation type="vanished">Wyłącz „Nasłuch na żywo”, aby zwolnić port na wysyłkę.</translation>
     </message>
     <message>
         <source>Wyłączony</source>
-        <translation>Wyłączony</translation>
+        <translation type="vanished">Wyłączony</translation>
     </message>
     <message>
         <source>Wyślij na urządzenie</source>
-        <translation>Wyślij na urządzenie</translation>
+        <translation type="vanished">Wyślij na urządzenie</translation>
     </message>
     <message>
         <source>Wyślij na urządzenie…</source>
-        <translation>Wyślij na urządzenie…</translation>
+        <translation type="vanished">Wyślij na urządzenie…</translation>
     </message>
     <message>
         <source>Wyśrodkuj pionowo</source>
-        <translation>Wyśrodkuj pionowo</translation>
+        <translation type="vanished">Wyśrodkuj pionowo</translation>
     </message>
     <message>
         <source>Wyśrodkuj poziomo</source>
-        <translation>Wyśrodkuj poziomo</translation>
+        <translation type="vanished">Wyśrodkuj poziomo</translation>
     </message>
     <message>
         <source>Wznów</source>
-        <translation>Wznów</translation>
+        <translation type="vanished">Wznów</translation>
     </message>
     <message>
         <source>Własna siła / prędkość (HPGL FS/VS)</source>
-        <translation>Własna siła / prędkość (HPGL FS/VS)</translation>
+        <translation type="vanished">Własna siła / prędkość (HPGL FS/VS)</translation>
     </message>
     <message>
         <source>Własne</source>
-        <translation>Własne</translation>
+        <translation type="vanished">Własne</translation>
     </message>
     <message>
         <source>Własne G-code</source>
-        <translation>Własne G-code</translation>
+        <translation type="vanished">Własne G-code</translation>
     </message>
     <message>
         <source>Z dół (mm)</source>
-        <translation>Z dół (mm)</translation>
+        <translation type="vanished">Z dół (mm)</translation>
     </message>
     <message>
         <source>Z góra (mm)</source>
-        <translation>Z góra (mm)</translation>
+        <translation type="vanished">Z góra (mm)</translation>
     </message>
     <message>
         <source>Zadania</source>
-        <translation>Zadania</translation>
+        <translation type="vanished">Zadania</translation>
     </message>
     <message>
         <source>Zamień X/Y</source>
-        <translation>Zamień X/Y</translation>
+        <translation type="vanished">Zamień X/Y</translation>
     </message>
     <message>
         <source>Zamknij szczeliny:</source>
-        <translation>Zamknij szczeliny:</translation>
+        <translation type="vanished">Zamknij szczeliny:</translation>
     </message>
     <message>
         <source>Zapis komendy sterowania nie powiódł się.</source>
-        <translation>Zapis komendy sterowania nie powiódł się.</translation>
+        <translation type="vanished">Zapis komendy sterowania nie powiódł się.</translation>
     </message>
     <message>
         <source>Zapis nie powiódł się.</source>
-        <translation>Zapis nie powiódł się.</translation>
+        <translation type="vanished">Zapis nie powiódł się.</translation>
     </message>
     <message>
         <source>Załaduj</source>
-        <translation>Załaduj</translation>
+        <translation type="vanished">Załaduj</translation>
     </message>
     <message>
         <source>Załaduj materiał</source>
-        <translation>Załaduj materiał</translation>
+        <translation type="vanished">Załaduj materiał</translation>
     </message>
     <message>
         <source>Załaduj materiał na ploter (komenda z ustawień)</source>
-        <translation>Załaduj materiał na ploter (komenda z ustawień)</translation>
+        <translation type="vanished">Załaduj materiał na ploter (komenda z ustawień)</translation>
     </message>
     <message>
         <source>Zmniejsz liczbę przejść</source>
-        <translation>Zmniejsz liczbę przejść</translation>
+        <translation type="vanished">Zmniejsz liczbę przejść</translation>
     </message>
     <message>
         <source>Zwiększ liczbę przejść</source>
-        <translation>Zwiększ liczbę przejść</translation>
+        <translation type="vanished">Zwiększ liczbę przejść</translation>
     </message>
     <message>
         <source>[control] połączono %1\n</source>
-        <translation>[control] połączono %1\n</translation>
+        <translation type="vanished">[control] połączono %1\n</translation>
     </message>
     <message>
         <source>błąd</source>
-        <translation>błąd</translation>
+        <translation type="vanished">błąd</translation>
     </message>
     <message>
         <source>połączony</source>
-        <translation>połączony</translation>
+        <translation type="vanished">połączony</translation>
     </message>
     <message>
         <source>rozłączony</source>
-        <translation>rozłączony</translation>
+        <translation type="vanished">rozłączony</translation>
     </message>
     <message>
         <source>ukończono</source>
-        <translation>ukończono</translation>
+        <translation type="vanished">ukończono</translation>
     </message>
     <message>
         <source>— ręczny port —</source>
-        <translation>— ręczny port —</translation>
+        <translation type="vanished">— ręczny port —</translation>
     </message>
 </context>
 </TS>

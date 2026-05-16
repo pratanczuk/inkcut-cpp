@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(inkcut-cpp VERSION 0.2.0 LANGUAGES CXX)
+project(inkcut-cpp VERSION 0.3.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -97,7 +97,11 @@ set(INKCUT_TS_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/translations/inkcut_en.ts"
     "${CMAKE_CURRENT_SOURCE_DIR}/translations/inkcut_pl.ts"
 )
-qt_add_translations(inkcut-gui TS_FILES ${INKCUT_TS_FILES})
+qt_add_translations(inkcut-gui
+    TS_FILES ${INKCUT_TS_FILES}
+    # trInk() wraps QCoreApplication::translate("Inkcut", …) — teach lupdate.
+    LUPDATE_OPTIONS -tr-function-alias translate+=trInk
+)
 
 install(TARGETS inkcut-cpp inkcut-gui RUNTIME DESTINATION bin)
 install(FILES ${INKCUT_TS_FILES} DESTINATION share/inkcut/translations OPTIONAL)

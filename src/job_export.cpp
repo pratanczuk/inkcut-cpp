@@ -10,6 +10,8 @@
 
 #include <algorithm>
 
+#include "i18n.hpp"
+
 namespace inkcut {
 
 namespace {
@@ -31,6 +33,11 @@ QJsonObject protocolSettingsToJson(const ProtocolSettings& p)
     gc.insert(QStringLiteral("upper_z"), p.gcode.upper_z);
     gc.insert(QStringLiteral("lift_gcode"), p.gcode.lift_gcode);
     gc.insert(QStringLiteral("lower_gcode"), p.gcode.lower_gcode);
+    gc.insert(QStringLiteral("solenoid_pwm_up"), p.gcode.solenoid_pwm_up);
+    gc.insert(QStringLiteral("solenoid_pwm_down"), p.gcode.solenoid_pwm_down);
+    gc.insert(QStringLiteral("solenoid_pwm_max"), p.gcode.solenoid_pwm_max);
+    gc.insert(QStringLiteral("feed_mm_min"), p.gcode.feed_mm_min);
+    gc.insert(QStringLiteral("feed_rapid_mm_min"), p.gcode.feed_rapid_mm_min);
     o.insert(QStringLiteral("gcode"), gc);
     return o;
 }
@@ -68,6 +75,16 @@ bool protocolSettingsFromJson(const QJsonObject& o, ProtocolSettings& p, QString
             p.gcode.lift_gcode = gc.value(QStringLiteral("lift_gcode")).toString();
         if (gc.contains(QStringLiteral("lower_gcode")))
             p.gcode.lower_gcode = gc.value(QStringLiteral("lower_gcode")).toString();
+        if (gc.contains(QStringLiteral("solenoid_pwm_up")))
+            p.gcode.solenoid_pwm_up = gc.value(QStringLiteral("solenoid_pwm_up")).toInt();
+        if (gc.contains(QStringLiteral("solenoid_pwm_down")))
+            p.gcode.solenoid_pwm_down = gc.value(QStringLiteral("solenoid_pwm_down")).toInt();
+        if (gc.contains(QStringLiteral("solenoid_pwm_max")))
+            p.gcode.solenoid_pwm_max = gc.value(QStringLiteral("solenoid_pwm_max")).toInt();
+        if (gc.contains(QStringLiteral("feed_mm_min")))
+            p.gcode.feed_mm_min = gc.value(QStringLiteral("feed_mm_min")).toInt();
+        if (gc.contains(QStringLiteral("feed_rapid_mm_min")))
+            p.gcode.feed_rapid_mm_min = gc.value(QStringLiteral("feed_rapid_mm_min")).toInt();
     }
 
     Q_UNUSED(err);
@@ -172,6 +189,12 @@ QJsonObject plotJobSettingsToJson(const PlotJobSettings& s)
     dev.insert(QStringLiteral("transport"), int(s.device.transport));
     dev.insert(QStringLiteral("port"), s.device.port_name);
     dev.insert(QStringLiteral("baud"), int(s.device.baud_rate));
+    dev.insert(QStringLiteral("data_bits"), s.device.data_bits);
+    dev.insert(QStringLiteral("parity"), s.device.parity);
+    dev.insert(QStringLiteral("stop_bits"), s.device.stop_bits);
+    dev.insert(QStringLiteral("flow_rts_cts"), s.device.flow_rts_cts);
+    dev.insert(QStringLiteral("flow_dsr_dtr"), s.device.flow_dsr_dtr);
+    dev.insert(QStringLiteral("flow_xon_xoff"), s.device.flow_xon_xoff);
     dev.insert(QStringLiteral("output_path"), s.device.output_path);
     dev.insert(QStringLiteral("printer_name"), s.device.printer_name);
     dev.insert(QStringLiteral("swap_xy"), s.device.swap_xy);
@@ -333,6 +356,18 @@ bool plotJobSettingsFromJson(const QJsonObject& o, PlotJobSettings& s, QString* 
             static_cast<PlotTransportKind>(dev.value(QStringLiteral("transport")).toInt());
         s.device.port_name = dev.value(QStringLiteral("port")).toString(s.device.port_name);
         s.device.baud_rate = dev.value(QStringLiteral("baud")).toInt(s.device.baud_rate);
+        if (dev.contains(QStringLiteral("data_bits")))
+            s.device.data_bits = dev.value(QStringLiteral("data_bits")).toInt(s.device.data_bits);
+        if (dev.contains(QStringLiteral("parity")))
+            s.device.parity = dev.value(QStringLiteral("parity")).toInt(s.device.parity);
+        if (dev.contains(QStringLiteral("stop_bits")))
+            s.device.stop_bits = dev.value(QStringLiteral("stop_bits")).toInt(s.device.stop_bits);
+        if (dev.contains(QStringLiteral("flow_rts_cts")))
+            s.device.flow_rts_cts = dev.value(QStringLiteral("flow_rts_cts")).toBool();
+        if (dev.contains(QStringLiteral("flow_dsr_dtr")))
+            s.device.flow_dsr_dtr = dev.value(QStringLiteral("flow_dsr_dtr")).toBool();
+        if (dev.contains(QStringLiteral("flow_xon_xoff")))
+            s.device.flow_xon_xoff = dev.value(QStringLiteral("flow_xon_xoff")).toBool();
         s.device.output_path = dev.value(QStringLiteral("output_path")).toString();
         s.device.printer_name = dev.value(QStringLiteral("printer_name")).toString();
         s.device.swap_xy = dev.value(QStringLiteral("swap_xy")).toBool();
@@ -365,7 +400,7 @@ bool plotJobSettingsFromJsonString(const QByteArray& utf8_json, PlotJobSettings&
     const QJsonDocument doc = QJsonDocument::fromJson(utf8_json, &pe);
     if (pe.error != QJsonParseError::NoError || !doc.isObject()) {
         if (error_message)
-            *error_message = QStringLiteral("JSON: błąd składni ustawień.");
+            *error_message = trInk("JSON: błąd składni ustawień.");
         return false;
     }
     return plotJobSettingsFromJson(doc.object(), settings_out, error_message);
@@ -401,7 +436,7 @@ bool importJobDocumentJson(const QByteArray& utf8_json, PlotJobSettings& setting
     const QJsonDocument doc = QJsonDocument::fromJson(utf8_json, &pe);
     if (pe.error != QJsonParseError::NoError || !doc.isObject()) {
         if (error_message)
-            *error_message = QStringLiteral("JSON: błąd składni.");
+            *error_message = trInk("JSON: błąd składni.");
         return false;
     }
 

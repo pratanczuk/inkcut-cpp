@@ -23,6 +23,8 @@
 #include <algorithm>
 #include <cmath>
 
+#include "i18n.hpp"
+
 namespace inkcut {
 
 namespace {
@@ -432,14 +434,14 @@ PrimitivePieceResult appendPrimitivePiece(const QDomElement& el, QPainterPath& p
         const double w = parseUnit(QStringView(el.attribute(QStringLiteral("width"))));
         const double h = parseUnit(QStringView(el.attribute(QStringLiteral("height"))));
         if (w <= 0 || h <= 0) {
-            appendSvgWarning(ctx, QStringLiteral("<image>: brak lub zerowy width/height — pominięto."));
+            appendSvgWarning(ctx, trInk("<image>: brak lub zerowy width/height — pominięto."));
             return PrimitivePieceResult::Skip;
         }
         const QString tr = href.trimmed();
         if (tr.startsWith(QLatin1String("http:"), Qt::CaseInsensitive)
             || tr.startsWith(QLatin1String("https:"), Qt::CaseInsensitive)) {
             appendSvgWarning(ctx,
-                             QStringLiteral("<image>: URI sieciowe nie są pobierane (prostokąt obramowania)."));
+                             trInk("<image>: URI sieciowe nie są pobierane (prostokąt obramowania)."));
             piece.addRect(x, y, w, h);
             return PrimitivePieceResult::Ok;
         }
@@ -463,7 +465,7 @@ PrimitivePieceResult appendPrimitivePiece(const QDomElement& el, QPainterPath& p
                 appendSvgWarning(ctx, QStringLiteral("<image> potrace: %1").arg(terr));
         } else if (!img.isNull() && !isBitmapTracingAvailable()) {
             appendSvgWarning(ctx,
-                             QStringLiteral("<image>: brak libpotrace — użyto prostokąta obramowania."));
+                             trInk("<image>: brak libpotrace — użyto prostokąta obramowania."));
         } else if (!tr.startsWith(QLatin1String("data:"), Qt::CaseInsensitive)) {
             const QString fs = resolveHrefFilesystem(href, ctx);
             if (!fs.isEmpty() && !QFile::exists(fs))
@@ -475,7 +477,7 @@ PrimitivePieceResult appendPrimitivePiece(const QDomElement& el, QPainterPath& p
     }
     if (tag == QLatin1String("foreignobject")) {
         appendSvgWarning(ctx,
-                         QStringLiteral("<foreignObject>: zawartość niestandardowa pominięta (opcjonalne obramowanie)."));
+                         trInk("<foreignObject>: zawartość niestandardowa pominięta (opcjonalne obramowanie)."));
         const double x = parseUnit(QStringView(el.attribute(QStringLiteral("x"))));
         const double y = parseUnit(QStringView(el.attribute(QStringLiteral("y"))));
         const double w = parseUnit(QStringView(el.attribute(QStringLiteral("width"))));
@@ -838,11 +840,11 @@ void applyPresentationPaint(const QDomElement& el, QPainterPath& piece, WalkCtx&
         QString ftag;
         if (paintUrlReferencesDef(filter_attr, ctx, &ftag)) {
             appendSvgWarning(ctx,
-                             QStringLiteral("Filtry SVG (filter=%1) — geometria bez rozmycia/efektów.")
+                             trInk("Filtry SVG (filter=%1) — geometria bez rozmycia/efektów.")
                                  .arg(ftag));
         } else {
             appendSvgWarning(ctx,
-                             QStringLiteral("Filtry SVG są ignorowane — geometria bez efektów."));
+                             trInk("Filtry SVG są ignorowane — geometria bez efektów."));
         }
         ctx.warned_filter = true;
     }
@@ -869,7 +871,7 @@ void applyPresentationPaint(const QDomElement& el, QPainterPath& piece, WalkCtx&
         } else if (!ctx.warned_fill_url) {
             fillOn = true;
             appendSvgWarning(ctx,
-                             QStringLiteral("Wypełnienie url(#…) — nieznany odniesienie; użyto obrysu."));
+                             trInk("Wypełnienie url(#…) — nieznany odniesienie; użyto obrysu."));
             ctx.warned_fill_url = true;
         }
     }
@@ -882,7 +884,7 @@ void applyPresentationPaint(const QDomElement& el, QPainterPath& piece, WalkCtx&
         } else if (!ctx.warned_stroke_url) {
             strokeOn = true;
             appendSvgWarning(ctx,
-                             QStringLiteral("Obrys url(#…) — nieznane odniesienie; użyto obrysu."));
+                             trInk("Obrys url(#…) — nieznane odniesienie; użyto obrysu."));
             ctx.warned_stroke_url = true;
         }
     }

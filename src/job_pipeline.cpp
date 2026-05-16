@@ -14,6 +14,8 @@
 #include <algorithm>
 #include <sstream>
 
+#include "i18n.hpp"
+
 namespace inkcut {
 
 namespace {
@@ -63,7 +65,7 @@ QVector<LayerFilterEntry> enabledLayersForLoad(const PlotJobSettings& settings,
     if (rows.isEmpty()) {
         LayerFilterEntry whole;
         whole.layer_id.clear();
-        whole.name = QStringLiteral("Cały dokument");
+        whole.name = trInk("Cały dokument");
         whole.enabled = true;
         whole.pass_count = 1;
         for (const LayerFilterEntry& e : settings.layer_filters) {
@@ -160,7 +162,7 @@ bool loadSvgDesignPath(const QString& xml, const QString& document_base_dir,
 
     if (!any) {
         if (error_message)
-            *error_message = QStringLiteral("Brak geometrii w włączonych warstwach/kolorach.");
+            *error_message = trInk("Brak geometrii w włączonych warstwach/kolorach.");
         return false;
     }
 

@@ -13,6 +13,8 @@
 #include <QSerialPort>
 #include <QThread>
 
+#include "i18n.hpp"
+
 namespace inkcut {
 
 PlotSendWorker::PlotSendWorker(QObject* parent) : QObject(parent) {}
@@ -57,7 +59,7 @@ void PlotSendWorker::requestCancel()
 void PlotSendWorker::run()
 {
     if (!device_ || payload_.isEmpty()) {
-        emit finished(false, QStringLiteral("Brak danych lub urządzenia."));
+        emit finished(false, trInk("Brak danych lub urządzenia."));
         delete device_;
         device_ = nullptr;
         return;
@@ -73,12 +75,10 @@ void PlotSendWorker::run()
     }
 
     QSerialPort serial;
-    SerialOpenOptions opt;
-    opt.port_name = device_->port_name;
-    opt.baud_rate = device_->baud_rate;
+    const SerialOpenOptions opt = serial_open_options_from_device(*device_);
     if (!open_serial_read_write(serial, opt)) {
         emit finished(false,
-                      QStringLiteral("Nie można otworzyć portu %1").arg(device_->port_name));
+                      trInk("Nie można otworzyć portu %1").arg(device_->port_name));
         return;
     }
 
@@ -102,7 +102,7 @@ void PlotSendWorker::run()
         const qint64 chunk = qMin(qint64(2048), total - sent);
         const qint64 n = serial.write(payload_.constData() + sent, chunk);
         if (n <= 0) {
-            emit finished(false, QStringLiteral("Błąd zapisu na port."));
+            emit finished(false, trInk("Błąd zapisu na port."));
             return;
         }
         sent += n;

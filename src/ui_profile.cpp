@@ -102,11 +102,21 @@ void applyDialogProfile(QDialog* dialog, const QSize& preferred, UiProfile profi
 {
     if (!dialog)
         return;
-    const QSize size = dialogSizeForProfile(preferred, profile);
-    dialog->resize(size);
-    dialog->setMinimumSize(qMin(520, size.width()), qMin(420, size.height()));
     if (profile == UiProfile::Tablet)
         dialog->setStyleSheet(profileStyleSheet(profile));
+
+    QSize size = preferred;
+    if (QWidget* p = dialog->parentWidget()) {
+        QWidget* top = p->window();
+        if (top) {
+            const QSize ts = top->size();
+            if (ts.width() > 100 && ts.height() > 100)
+                size = ts;
+        }
+    }
+    size = dialogSizeForProfile(size, profile);
+    dialog->resize(size);
+    dialog->setMinimumSize(qMin(640, size.width()), qMin(480, size.height()));
 }
 
 } // namespace inkcut

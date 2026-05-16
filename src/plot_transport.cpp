@@ -8,6 +8,8 @@
 #include <QProcess>
 #include <QSerialPort>
 
+#include "i18n.hpp"
+
 namespace inkcut {
 
 namespace {
@@ -16,7 +18,7 @@ bool spoolToCupsPrinter(const QString& file_path, const QString& printer_name, Q
 {
     if (printer_name.trimmed().isEmpty()) {
         if (err)
-            *err = QStringLiteral("Podaj nazwę drukarki CUPS (pole „Drukarka”).");
+            *err = trInk("Podaj nazwę drukarki CUPS (pole „Drukarka”).");
         return false;
     }
 
@@ -26,7 +28,7 @@ bool spoolToCupsPrinter(const QString& file_path, const QString& printer_name, Q
     proc.start(QStringLiteral("lp"), args);
     if (!proc.waitForStarted(5000)) {
         if (err)
-            *err = QStringLiteral("Nie można uruchomić „lp” — zainstaluj CUPS lub zapisz plik ręcznie.");
+            *err = trInk("Nie można uruchomić „lp” — zainstaluj CUPS lub zapisz plik ręcznie.");
         return false;
     }
     if (!proc.waitForFinished(120000)) {
@@ -39,7 +41,7 @@ bool spoolToCupsPrinter(const QString& file_path, const QString& printer_name, Q
         if (err)
             *err = QString::fromUtf8(proc.readAllStandardError()).trimmed();
         if (err && err->isEmpty())
-            *err = QStringLiteral("lp zakończył się kodem %1").arg(proc.exitCode());
+            *err = trInk("lp zakończył się kodem %1").arg(proc.exitCode());
         return false;
     }
     return true;
@@ -55,18 +57,18 @@ TransportResult sendPlotPayload(const QByteArray& payload, const DeviceSetup& de
     case PlotTransportKind::FileOutput: {
         const QString path = device.output_path.trimmed();
         if (path.isEmpty()) {
-            r.error_message = QStringLiteral("Brak ścieżki pliku wyjściowego.");
+            r.error_message = trInk("Brak ścieżki pliku wyjściowego.");
             return r;
         }
         QFile f(path);
         if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            r.error_message = QStringLiteral("Nie można zapisać: %1").arg(path);
+            r.error_message = trInk("Nie można zapisać: %1").arg(path);
             return r;
         }
         r.bytes_written = f.write(payload);
         r.ok = r.bytes_written == payload.size();
         if (!r.ok)
-            r.error_message = QStringLiteral("Zapis niekompletny.");
+            r.error_message = trInk("Zapis niekompletny.");
         return r;
     }
     case PlotTransportKind::Printer: {
@@ -75,12 +77,12 @@ TransportResult sendPlotPayload(const QByteArray& payload, const DeviceSetup& de
             path = QStringLiteral("/tmp/inkcut_spool.prn");
         QFile f(path);
         if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            r.error_message = QStringLiteral("Nie można zapisać pliku dla drukarki: %1").arg(path);
+            r.error_message = trInk("Nie można zapisać pliku dla drukarki: %1").arg(path);
             return r;
         }
         r.bytes_written = f.write(payload);
         if (r.bytes_written != payload.size()) {
-            r.error_message = QStringLiteral("Zapis niekompletny.");
+            r.error_message = trInk("Zapis niekompletny.");
             return r;
         }
         f.close();
@@ -92,7 +94,7 @@ TransportResult sendPlotPayload(const QByteArray& payload, const DeviceSetup& de
         } else {
             r.ok = true;
             r.error_message =
-                QStringLiteral("Zapisano %1 — lp nie powiódł się: %2")
+                trInk("Zapisano %1 — lp nie powiódł się: %2")
                     .arg(path, lp_err);
         }
         return r;
@@ -100,16 +102,14 @@ TransportResult sendPlotPayload(const QByteArray& payload, const DeviceSetup& de
     case PlotTransportKind::SerialPort:
     default: {
         QSerialPort serial;
-        SerialOpenOptions opt;
-        opt.port_name = device.port_name;
-        opt.baud_rate = device.baud_rate;
+        const SerialOpenOptions opt = serial_open_options_from_device(device);
         if (!open_serial(serial, opt)) {
             r.error_message =
-                QStringLiteral("Nie można otworzyć portu %1").arg(device.port_name);
+                trInk("Nie można otworzyć portu %1").arg(device.port_name);
             return r;
         }
         if (!write_all(serial, payload)) {
-            r.error_message = QStringLiteral("Zapis na port nie powiódł się.");
+            r.error_message = trInk("Zapis na port nie powiódł się.");
             return r;
         }
         r.bytes_written = payload.size();

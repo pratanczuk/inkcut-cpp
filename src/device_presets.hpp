@@ -19,6 +19,11 @@ struct DevicePreset {
     bool mirror_x = false;
     bool mirror_y = false;
     qint32 default_baud = 9600;
+    GCodeProtocolSettings::Dialect gcode_dialect = GCodeProtocolSettings::Dialect::Generic;
+    GCodeProtocolSettings::LiftMode gcode_lift_mode = GCodeProtocolSettings::Implicit;
+    int solenoid_pwm_up = 0;
+    int solenoid_pwm_down = 700;
+    int solenoid_pwm_max = 1000;
 };
 
 const QVector<DevicePreset>& devicePresets();

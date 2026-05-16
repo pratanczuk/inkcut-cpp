@@ -23,6 +23,8 @@
 #include <potracelib.h>
 #endif
 
+#include "i18n.hpp"
+
 namespace inkcut {
 
 bool isBitmapTracingAvailable()
@@ -565,7 +567,7 @@ potrace_bitmap_t* imageToBitmap(const QImage& binary, QString* err)
 {
     if (binary.format() != QImage::Format_Grayscale8 || binary.isNull()) {
         if (err)
-            *err = QStringLiteral("Nie można przygotować obrazu do śledzenia.");
+            *err = trInk("Nie można przygotować obrazu do śledzenia.");
         return nullptr;
     }
 
@@ -580,7 +582,7 @@ potrace_bitmap_t* imageToBitmap(const QImage& binary, QString* err)
     if (!bm->map) {
         delete bm;
         if (err)
-            *err = QStringLiteral("Brak pamięci na bitmapę potrace.");
+            *err = trInk("Brak pamięci na bitmapę potrace.");
         return nullptr;
     }
 
@@ -866,7 +868,7 @@ potrace_state_t* tracePreparedBitmap(const QImage& prepared, const BitmapTraceOp
     if (!param) {
         freeBitmap(bm);
         if (err)
-            *err = QStringLiteral("potrace_param_default nie powiódł się.");
+            *err = trInk("potrace_param_default nie powiódł się.");
         return nullptr;
     }
 
@@ -936,7 +938,7 @@ bool traceBitmapToSvg(const QImage& image, QString& svg_xml_out, QString* error_
     const QImage prepared = prepareImageForTrace(image, options);
     if (prepared.isNull()) {
         if (error_message)
-            *error_message = QStringLiteral("Nie można przygotować obrazu.");
+            *error_message = trInk("Nie można przygotować obrazu.");
         return false;
     }
 
@@ -950,7 +952,7 @@ bool traceBitmapToSvg(const QImage& image, QString& svg_xml_out, QString* error_
             potrace_state_free(st);
         if (error_message)
             *error_message =
-                err.isEmpty() ? QStringLiteral("potrace_trace nie powiódł się.") : err;
+                err.isEmpty() ? trInk("potrace_trace nie powiódł się.") : err;
         return false;
     }
 
@@ -962,7 +964,7 @@ bool traceBitmapToSvg(const QImage& image, QString& svg_xml_out, QString* error_
     potrace_state_free(st);
     if (path_d.isEmpty()) {
         if (error_message)
-            *error_message = QStringLiteral("Potrace nie znalazł kształtów do wycięcia.");
+            *error_message = trInk("Potrace nie znalazł kształtów do wycięcia.");
         return false;
     }
 
@@ -1007,7 +1009,7 @@ bool traceBitmapToPath(const QImage& image, QPainterPath& out, QString* error_me
     const QImage prepared = prepareImageForTrace(image, options);
     if (prepared.isNull()) {
         if (error_message)
-            *error_message = QStringLiteral("Nie można przygotować obrazu.");
+            *error_message = trInk("Nie można przygotować obrazu.");
         return false;
     }
 
@@ -1021,7 +1023,7 @@ bool traceBitmapToPath(const QImage& image, QPainterPath& out, QString* error_me
             potrace_state_free(st);
         if (error_message)
             *error_message =
-                err.isEmpty() ? QStringLiteral("potrace_trace nie powiódł się.") : err;
+                err.isEmpty() ? trInk("potrace_trace nie powiódł się.") : err;
         return false;
     }
 

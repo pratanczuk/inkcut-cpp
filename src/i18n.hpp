@@ -9,10 +9,8 @@ class QApplication;
 namespace inkcut {
 
 /// Wszystkie UI stringi w kontekście „Inkcut” (Qt Linguist).
-inline QString trInk(const char* utf8)
-{
-    return QCoreApplication::translate("Inkcut", utf8);
-}
+/// Makro (nie funkcja inline), żeby lupdate widział translate("Inkcut", …).
+#define trInk(sourceText) QCoreApplication::translate("Inkcut", sourceText)
 
 void installInkcutTranslator(QApplication& app, const QString& language_code);
 

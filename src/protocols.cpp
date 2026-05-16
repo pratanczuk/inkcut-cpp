@@ -15,6 +15,11 @@ PlotStreamEncoder::PlotStreamEncoder(std::function<void(std::string)> sink, Prot
 {
 }
 
+void PlotStreamEncoder::set_initial_pen_up(bool pen_up)
+{
+    gcode_currently_up_ = pen_up;
+}
+
 void PlotStreamEncoder::write_payload(std::string data)
 {
     if (s_.protocol == PlotProtocol::HPGL && s_.hpgl_pad)
@@ -60,6 +65,15 @@ void PlotStreamEncoder::connection_made()
                 write_payload("G98; Return to initial z\n");
                 write_payload("G90; Use absolute coordinates\n");
             }
+        }
+        if (s_.gcode.lift_mode == GCodeProtocolSettings::SolenoidPwm) {
+            const int up = s_.gcode.solenoid_pwm_up;
+            if (up <= 0)
+                write_payload("M5; pen up (solenoid off)\n");
+            else
+                write_payload(
+                    QStringLiteral("M3 S%1; pen up\n").arg(up).toStdString());
+            gcode_currently_up_ = true;
         }
         break;
     case PlotProtocol::CAMM_GL1:
@@ -139,9 +153,18 @@ void PlotStreamEncoder::move_gcode(double x, double y, double z, bool absolute)
         if (gcode_currently_up_) {
             if (s_.gcode.lift_mode == GCodeProtocolSettings::Custom)
                 send_gcode_block(s_.gcode.lower_gcode);
+            else if (s_.gcode.lift_mode == GCodeProtocolSettings::SolenoidPwm) {
+                const int down = s_.gcode.solenoid_pwm_down;
+                send_gcode_block(QStringLiteral("M3 S%1\n").arg(down));
+            }
         } else {
             if (s_.gcode.lift_mode == GCodeProtocolSettings::Custom)
                 send_gcode_block(s_.gcode.lift_gcode);
+            else if (s_.gcode.lift_mode == GCodeProtocolSettings::SolenoidPwm) {
+                const int up = s_.gcode.solenoid_pwm_up;
+                send_gcode_block(up <= 0 ? QStringLiteral("M5\n")
+                                         : QStringLiteral("M3 S%1\n").arg(up));
+            }
         }
         gcode_currently_up_ = pen_up;
     }
@@ -162,6 +185,9 @@ void PlotStreamEncoder::move_gcode(double x, double y, double z, bool absolute)
         const double physical_z = (z != 0.0) ? s_.gcode.lower_z : s_.gcode.upper_z;
         line += QStringLiteral(" Z%1").arg(physical_z, 0, 'f', prec);
     }
+    const int feed = pen_up ? s_.gcode.feed_rapid_mm_min : s_.gcode.feed_mm_min;
+    if (feed > 0)
+        line += QStringLiteral(" F%1").arg(feed);
     line += QLatin1Char('\n');
     send_gcode_block(line);
 }
@@ -300,10 +326,12 @@ std::string encode_pen_up_absolute_user_xy(double x, double y, const ProtocolSet
     return encode_move_absolute_user_xy(x, y, 0.0, ps);
 }
 
-std::string encode_move_absolute_user_xy(double x, double y, double z, const ProtocolSettings& ps)
+std::string encode_move_absolute_user_xy(double x, double y, double z, const ProtocolSettings& ps,
+                                         bool previous_pen_up)
 {
     std::string acc;
     PlotStreamEncoder enc([&](std::string chunk) { acc += std::move(chunk); }, ps);
+    enc.set_initial_pen_up(previous_pen_up);
     enc.move(x, y, z, true);
     return acc;
 }

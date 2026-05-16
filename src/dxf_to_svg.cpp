@@ -14,6 +14,8 @@
 
 #include <cmath>
 
+#include "i18n.hpp"
+
 namespace inkcut {
 
 bool isDxfToSvgAvailable()
@@ -281,12 +283,12 @@ bool convertDxfBytesToSvg(const QByteArray& dxf_raw, QString& svg_xml_out, QStri
     tmp.setAutoRemove(true);
     if (!tmp.open()) {
         if (error_message)
-            *error_message = QStringLiteral("Nie można utworzyć pliku tymczasowego dla DXF.");
+            *error_message = trInk("Nie można utworzyć pliku tymczasowego dla DXF.");
         return false;
     }
     if (tmp.write(dxf_raw) != dxf_raw.size()) {
         if (error_message)
-            *error_message = QStringLiteral("Zapis DXF tymczasowego nie powiódł się.");
+            *error_message = trInk("Zapis DXF tymczasowego nie powiódł się.");
         return false;
     }
     tmp.close();
@@ -296,7 +298,7 @@ bool convertDxfBytesToSvg(const QByteArray& dxf_raw, QString& svg_xml_out, QStri
     const bool ok = reader.read(&builder, false);
     if (!ok) {
         if (error_message)
-            *error_message = QStringLiteral("libdxfrw: odczyt DXF nie powiódł się.");
+            *error_message = trInk("libdxfrw: odczyt DXF nie powiódł się.");
         return false;
     }
 

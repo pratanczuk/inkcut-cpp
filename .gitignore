@@ -6,3 +6,5 @@ Makefile
 *.user
 upstream-ref/
 .upstream-ref-download
+__pycache__/
+*.pyc

@@ -87,7 +87,16 @@ struct DeviceSetup {
     QString model_name;
     PlotTransportKind transport = PlotTransportKind::SerialPort;
     QString port_name = QStringLiteral("/dev/ttyUSB0");
-    qint32 baud_rate = 9600;
+    qint32 baud_rate = 115200;
+    /// 5, 6, 7 lub 8 (QSerialPort::DataBits).
+    int data_bits = 8;
+    /// 0=None, 1=Even, 2=Odd, 3=Space, 4=Mark.
+    int parity = 0;
+    /// 1 lub 2 stop bits.
+    int stop_bits = 1;
+    bool flow_rts_cts = false;
+    bool flow_dsr_dtr = false;
+    bool flow_xon_xoff = false;
     QString output_path;
     QString printer_name;
     bool swap_xy = false;
