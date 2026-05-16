@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Inkcut C++
+Comment=Sterowanie ploterami tnącymi — GUI i łańcuch HPGL/DMPL/G-code
+Exec=inkcut-gui %F
+Categories=Graphics;VectorGraphics;
+MimeType=image/svg+xml;
+Terminal=false

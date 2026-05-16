@@ -1,0 +1,10 @@
+# Inkcut — dostęp do portów szeregowych USB bez root (grupa dialout).
+# Instalacja (root): sudo cp udev/99-inkcut-serial.rules /etc/udev/rules.d/
+#                   sudo udevadm control --reload-rules && sudo udevadm trigger
+#
+# Dostosuj ID_VENDOR — lub zakomentuj warunki ATTRS, aby reguła była ogólna (mniej bezpieczne).
+
+# SUBSYSTEM=="tty", ATTRS{idVendor}=="067b", ATTRS{idProduct}=="2303", MODE="0660", GROUP="dialout"
+
+KERNEL=="ttyUSB*", MODE="0660", GROUP="dialout"
+KERNEL=="ttyACM*", MODE="0660", GROUP="dialout"

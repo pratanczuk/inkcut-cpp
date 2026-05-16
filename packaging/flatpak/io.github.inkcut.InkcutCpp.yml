@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Szablon Flatpak — budowa z katalogu źródeł projektu:
+#   flatpak-builder --force-clean build-dir packaging/flatpak/io.github.inkcut.InkcutCpp.yml
+
+app-id: io.github.inkcut.InkcutCpp
+runtime: org.kde.Platform
+runtime-version: '6.9'
+sdk: org.kde.Sdk
+command: inkcut-gui
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  - --share=network
+
+modules:
+  - name: inkcut-cpp
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+    sources:
+      - type: dir
+        path: ../..

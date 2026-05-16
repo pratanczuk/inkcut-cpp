@@ -1,0 +1,6 @@
+usr/bin/inkcut-cpp
+usr/bin/inkcut-gui
+usr/share/applications/io.github.inkcut.InkcutCpp.desktop
+usr/share/metainfo/io.github.inkcut.InkcutCpp.metainfo.xml
+usr/share/inkcut/*
+usr/lib/*/inkcut/*

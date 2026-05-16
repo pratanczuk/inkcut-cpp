@@ -1,0 +1,8 @@
+inkcut-cpp (0.2.0-1) UNRELEASED; urgency=medium
+
+  * Initial public release of the C++/Qt6 port of Inkcut.
+  * SVG, DXF (libdxfrw) and bitmap (libpotrace) import.
+  * HPGL, DMPL, GPGL, G-code, CAMM output protocols.
+  * EN/PL translations.
+
+ -- pratanczuk <pratanczuk@users.noreply.github.com>  Sat, 16 May 2026 19:00:00 +0200

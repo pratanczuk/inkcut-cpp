@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.inkcut.InkcutCpp</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Inkcut C++</name>
+  <summary>Drive vinyl cutters, plotters and engravers from SVG/DXF/bitmap input</summary>
+  <summary xml:lang="pl">Sterowanie ploterami tnącymi i grawerkami z plików SVG/DXF/bitmap</summary>
+  <description>
+    <p>
+      Inkcut C++ is a Qt6 reimplementation of the Inkcut workflow: load an SVG, DXF
+      or bitmap (via potrace), apply geometry filters (blade offset, min-line, repeats,
+      weedlines), order the cuts and send HPGL / DMPL / GPGL / G-code / CAMM commands
+      over a serial port or save them to a file.
+    </p>
+    <p xml:lang="pl">
+      Inkcut C++ to port łańcucha cięcia Inkcut do C++/Qt6: import SVG, DXF lub bitmapy
+      (przez potrace), filtry geometrii (offset ostrza, min. linia, powtórki, linie tnące),
+      kolejność cięcia i wysyłka HPGL / DMPL / GPGL / G-code / CAMM na port szeregowy
+      lub do pliku.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>SVG, DXF and bitmap import (potrace + mkbitmap-like preprocessing)</li>
+      <li>HPGL, DMPL, GPGL, G-code and CAMM output</li>
+      <li>Copies, rotation, mirroring, weedlines, blade-offset compensation</li>
+      <li>Material roll, custom force / speed (HPGL FS/VS)</li>
+      <li>Live plot view, job history, device console</li>
+      <li>Touch-friendly tablet UI profile</li>
+      <li>English and Polish translations</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">io.github.inkcut.InkcutCpp.desktop</launchable>
+  <url type="homepage">https://github.com/pratanczuk/inkcut-cpp-</url>
+  <url type="bugtracker">https://github.com/pratanczuk/inkcut-cpp-/issues</url>
+  <url type="vcs-browser">https://github.com/pratanczuk/inkcut-cpp-</url>
+  <developer_name>pratanczuk and contributors (port of Inkcut by Jairus Martin et al.)</developer_name>
+  <provides>
+    <binary>inkcut-gui</binary>
+    <binary>inkcut-cpp</binary>
+  </provides>
+  <categories>
+    <category>Graphics</category>
+    <category>VectorGraphics</category>
+    <category>Engineering</category>
+  </categories>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="0.2.0" date="2026-05-16">
+      <description>
+        <p>Initial public release of the C++/Qt6 port.</p>
+        <ul>
+          <li>SVG, DXF (libdxfrw) and bitmap (libpotrace) import</li>
+          <li>HPGL, DMPL, GPGL, G-code, CAMM output</li>
+          <li>EN/PL translations</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+</component>

@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  linux:
+    name: Build & test on Ubuntu ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [22.04, 24.04]
+    runs-on: ubuntu-${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build g++ pkg-config \
+            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
+            libqt6serialport6-dev libqt6svg6-dev \
+            libpotrace-dev
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build -j
+
+      - name: Test
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Build .deb (sanity)
+        working-directory: build
+        run: cpack -G DEB

@@ -1,0 +1,37 @@
+Source: inkcut-cpp
+Section: graphics
+Priority: optional
+Maintainer: pratanczuk <pratanczuk@users.noreply.github.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ cmake (>= 3.16),
+ ninja-build,
+ pkg-config,
+ qt6-base-dev,
+ qt6-tools-dev,
+ qt6-tools-dev-tools,
+ libqt6serialport6-dev,
+ libqt6svg6-dev,
+ libpotrace-dev,
+Standards-Version: 4.6.2
+Homepage: https://github.com/pratanczuk/inkcut-cpp-
+Vcs-Browser: https://github.com/pratanczuk/inkcut-cpp-
+Vcs-Git: https://github.com/pratanczuk/inkcut-cpp-.git
+Rules-Requires-Root: no
+
+Package: inkcut-cpp
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+Recommends:
+ libqt6svg6,
+Description: Drive vinyl cutters, plotters and engravers from SVG/DXF/bitmap input
+ Inkcut C++ is a Qt6 reimplementation of the Inkcut workflow:
+ load an SVG, DXF or bitmap (via potrace), apply geometry filters
+ (blade offset, min-line, repeats, weedlines), order the cuts and
+ send HPGL / DMPL / GPGL / G-code / CAMM commands over a serial
+ port or save them to a file.
+ .
+ Includes both a GUI application (inkcut-gui) and a command-line
+ batch converter (inkcut-cpp).

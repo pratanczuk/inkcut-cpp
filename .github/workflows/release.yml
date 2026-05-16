@@ -1,0 +1,171 @@
+name: Build .deb packages
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: 'Publish a GitHub Release with the built .deb files'
+        type: boolean
+        default: false
+
+env:
+  PROJECT_NAME: inkcut-cpp
+
+jobs:
+  # --- Native amd64/arm64 builds on hosted runners ---------------------------
+  native:
+    name: ${{ matrix.codename }} / ${{ matrix.arch }} (native)
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner:   ubuntu-22.04
+            codename: jammy
+            arch:     amd64
+          - runner:   ubuntu-22.04-arm
+            codename: jammy
+            arch:     arm64
+          - runner:   ubuntu-24.04
+            codename: noble
+            arch:     amd64
+          - runner:   ubuntu-24.04-arm
+            codename: noble
+            arch:     arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build g++ pkg-config \
+            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
+            libqt6serialport6-dev libqt6svg6-dev \
+            libpotrace-dev
+
+      - name: Configure
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr
+
+      - name: Build
+        run: cmake --build build -j
+
+      - name: Test
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Package (.deb via CPack)
+        working-directory: build
+        run: cpack -G DEB
+
+      - name: Rename .deb (codename + arch)
+        working-directory: build
+        run: |
+          set -eux
+          for f in *.deb; do
+            base="${f%.deb}"
+            mv "$f" "${base}_${{ matrix.codename }}_${{ matrix.arch }}.deb"
+          done
+          ls -la *.deb
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deb-${{ matrix.codename }}-${{ matrix.arch }}
+          path: build/*.deb
+          if-no-files-found: error
+
+  # --- armhf cross-build via Docker + QEMU (for Rockchip RK3128, RPi 32-bit) -
+  armhf:
+    name: ${{ matrix.codename }} / armhf (QEMU)
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - codename: jammy   # Ubuntu 22.04 — target for RK3128
+            image:    arm32v7/ubuntu:22.04
+          - codename: noble   # Ubuntu 24.04 armhf (best-effort)
+            image:    arm32v7/ubuntu:24.04
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm
+
+      - name: Build inside ${{ matrix.image }}
+        run: |
+          docker run --rm --platform linux/arm/v7 \
+            -v "${{ github.workspace }}:/src" -w /src \
+            -e DEBIAN_FRONTEND=noninteractive \
+            ${{ matrix.image }} bash -eux -c '
+              apt-get update
+              apt-get install -y --no-install-recommends \
+                cmake ninja-build g++ pkg-config ca-certificates \
+                qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
+                libqt6serialport6-dev libqt6svg6-dev \
+                libpotrace-dev \
+                dpkg-dev fakeroot
+              cmake -S . -B build -G Ninja \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_INSTALL_PREFIX=/usr \
+                -DCMAKE_CXX_FLAGS="-march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=hard"
+              cmake --build build -j$(nproc)
+              QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure || true
+              cd build && cpack -G DEB
+            '
+
+      - name: Rename .deb (armhf + codename)
+        working-directory: build
+        run: |
+          set -eux
+          for f in *.deb; do
+            base="${f%.deb}"
+            # CPack writes arch as "armhf" automatically when dpkg-deb is present
+            mv "$f" "${base}_${{ matrix.codename }}_armhf.deb"
+          done
+          ls -la *.deb
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deb-${{ matrix.codename }}-armhf
+          path: build/*.deb
+          if-no-files-found: error
+
+  # --- Aggregate and publish release ----------------------------------------
+  release:
+    name: Publish GitHub Release
+    needs: [native, armhf]
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.publish_release == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: deb-*
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -la dist/
+
+      - name: Compute SHA256 sums
+        working-directory: dist
+        run: sha256sum *.deb > SHA256SUMS.txt
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.deb
+            dist/SHA256SUMS.txt
+          generate_release_notes: true
+          draft: false
+          prerelease: false
