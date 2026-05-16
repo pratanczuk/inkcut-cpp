@@ -138,6 +138,8 @@ jobs:
           # Cache the dependency-installed image layer in the project's
           # ghcr.io registry; subsequent runs skip the long `apt-get install`.
           githubToken: ${{ github.token }}
+          env: |
+            CODENAME: ${{ matrix.codename }}
           install: |
             export DEBIAN_FRONTEND=noninteractive
             apt-get update
@@ -155,19 +157,19 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_INSTALL_PREFIX=/usr \
               -DCMAKE_CXX_FLAGS="-march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=hard"
-            cmake --build build -j$(nproc)
+            cmake --build build -j"$(nproc)"
             QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure || true
             cd build && cpack -G DEB
-
-      - name: Rename .deb (armhf + codename)
-        working-directory: build
-        run: |
-          set -eux
-          for f in *.deb; do
-            base="${f%.deb}"
-            mv "$f" "${base}_${{ matrix.codename }}_armhf.deb"
-          done
-          ls -la *.deb
+            # Rename inside the container so we don't need write access on
+            # the host: the build/ tree is owned by root (container uid 0).
+            for f in *.deb; do
+              base="${f%.deb}"
+              mv "$f" "${base}_${CODENAME}_armhf.deb"
+            done
+            ls -la *.deb
+            # Make the build artifacts readable+writable by anyone so the
+            # host-side actions/upload-artifact step can read them.
+            chmod -R a+rwX .
 
       - uses: actions/upload-artifact@v4
         with:
