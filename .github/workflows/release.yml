@@ -60,11 +60,16 @@ jobs:
           # imported target but does not depend on the package that
           # ships the binary, so CMake's find_package(Qt6 LinguistTools)
           # fails. Always pull it in explicitly.
+          # libgl-dev / libegl-dev: Qt6Gui's CMake config requires
+          # WrapOpenGL which probes OPENGL_INCLUDE_DIR. qt6-base-dev
+          # only Recommends it, so under --no-install-recommends find_package(Qt6 Gui)
+          # fails. Pull it in explicitly.
           sudo apt-get install -y --no-install-recommends \
             cmake ninja-build g++ pkg-config \
             qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
             qt6-l10n-tools \
             libqt6serialport6-dev libqt6svg6-dev \
+            libgl-dev libegl-dev \
             libpotrace-dev
 
       - name: Configure
@@ -132,11 +137,14 @@ jobs:
               # qt6-l10n-tools: provides lconvert/lupdate/lrelease that
               # Qt6LinguistTools imports as Qt6::lconvert (see comment
               # in the native job).
+              # libgl-dev / libegl-dev: needed by Qt6Gui's WrapOpenGL
+              # find_dependency (see comment in the native job).
               apt-get install -y --no-install-recommends \
                 cmake ninja-build g++ pkg-config ca-certificates git \
                 qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
                 qt6-l10n-tools \
                 libqt6serialport6-dev libqt6svg6-dev \
+                libgl-dev libegl-dev \
                 libpotrace-dev \
                 dpkg-dev fakeroot
               cmake -S . -B build -G Ninja \
