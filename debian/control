@@ -14,9 +14,9 @@ Build-Depends:
  libqt6svg6-dev,
  libpotrace-dev,
 Standards-Version: 4.6.2
-Homepage: https://github.com/pratanczuk/inkcut-cpp-
-Vcs-Browser: https://github.com/pratanczuk/inkcut-cpp-
-Vcs-Git: https://github.com/pratanczuk/inkcut-cpp-.git
+Homepage: https://github.com/pratanczuk/inkcut-cpp
+Vcs-Browser: https://github.com/pratanczuk/inkcut-cpp
+Vcs-Git: https://github.com/pratanczuk/inkcut-cpp.git
 Rules-Requires-Root: no
 
 Package: inkcut-cpp

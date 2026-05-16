@@ -1,9 +1,12 @@
 name: CI
 
+# Pushes to main are already covered by the release workflow (which builds the
+# full matrix and publishes a rolling "continuous" pre-release). Here we only
+# run the sanity build/test on pull requests so reviewers see CI status before
+# merging.
 on:
-  push:
-    branches: [master, main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   linux:

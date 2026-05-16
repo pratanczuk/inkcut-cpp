@@ -1,6 +1,6 @@
 # Inkcut C++
 
-[![Build .deb packages](https://github.com/pratanczuk/inkcut-cpp-/actions/workflows/release.yml/badge.svg)](https://github.com/pratanczuk/inkcut-cpp-/actions/workflows/release.yml)
+[![Build .deb packages](https://github.com/pratanczuk/inkcut-cpp/actions/workflows/release.yml/badge.svg)](https://github.com/pratanczuk/inkcut-cpp/actions/workflows/release.yml)
 [![License: GPL v3+](https://img.shields.io/badge/License-GPLv3%2B-blue.svg)](LICENSE)
 
 > Native C++/Qt6 reimplementation of [Inkcut](https://github.com/codelv/inkcut) — software for
@@ -42,7 +42,9 @@ reimplementation focused on:
 ### From `.deb` (recommended)
 
 Pre-built packages for **Ubuntu 22.04 / 24.04** on **amd64 / arm64 / armhf** are published
-under [Releases](https://github.com/pratanczuk/inkcut-cpp-/releases).
+under [Releases](https://github.com/pratanczuk/inkcut-cpp/releases). Every push to `main`
+also publishes a rolling **pre-release** under the `continuous` tag, so you can always grab
+the latest build without waiting for a tagged version.
 
 ```bash
 # Ubuntu 22.04 amd64
@@ -65,8 +67,8 @@ sudo apt install cmake ninja-build g++ \
     libqt6serialport6-dev libqt6svg6-dev \
     libpotrace-dev
 
-git clone https://github.com/pratanczuk/inkcut-cpp-.git
-cd inkcut-cpp-
+git clone https://github.com/pratanczuk/inkcut-cpp.git
+cd inkcut-cpp
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
 ctest --test-dir build --output-on-failure
@@ -145,7 +147,7 @@ implementacja C++17 + Qt 6:
 ### Instalacja
 
 Gotowe pakiety dla **Ubuntu 22.04** (amd64 / arm64 / armhf) i **24.04** są w
-[Releases](https://github.com/pratanczuk/inkcut-cpp-/releases).
+[Releases](https://github.com/pratanczuk/inkcut-cpp/releases).
 
 ```bash
 sudo apt install ./inkcut-cpp_<WERSJA>_jammy_armhf.deb   # RK3128, RPi 32-bit

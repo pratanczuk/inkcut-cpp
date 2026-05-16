@@ -6,7 +6,7 @@ set(CPACK_PACKAGE_VENDOR "Inkcut C++ contributors")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
     "Drive vinyl cutters, plotters and engravers from SVG/DXF/bitmap input")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
-set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/pratanczuk/inkcut-cpp-")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/pratanczuk/inkcut-cpp")
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
     set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")

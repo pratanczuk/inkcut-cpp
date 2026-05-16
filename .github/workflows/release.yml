@@ -1,17 +1,32 @@
-name: Build .deb packages
+name: Build and publish .deb packages
 
+# Triggers:
+#   - push to main         -> build matrix + publish rolling pre-release at tag "continuous"
+#   - push of tag v*       -> build matrix + publish full release
+#   - workflow_dispatch    -> manual run (publishes a continuous build by default)
 on:
   push:
+    branches: [main]
     tags: ['v*']
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'PLAN.md'
   workflow_dispatch:
     inputs:
       publish_release:
         description: 'Publish a GitHub Release with the built .deb files'
         type: boolean
-        default: false
+        default: true
 
 env:
   PROJECT_NAME: inkcut-cpp
+
+# Avoid stacking up expensive (especially armhf) builds when several commits
+# land back-to-back. The newest run wins.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   # --- Native amd64/arm64 builds on hosted runners ---------------------------
@@ -143,11 +158,16 @@ jobs:
   release:
     name: Publish GitHub Release
     needs: [native, armhf]
-    if: startsWith(github.ref, 'refs/tags/v') || inputs.publish_release == true
+    # Skip for PRs entirely; otherwise always publish (either continuous or tagged).
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - uses: actions/download-artifact@v4
         with:
           path: dist
@@ -161,11 +181,72 @@ jobs:
         working-directory: dist
         run: sha256sum *.deb > SHA256SUMS.txt
 
-      - uses: softprops/action-gh-release@v2
+      - name: Determine release parameters
+        id: rel
+        run: |
+          short_sha="${GITHUB_SHA::7}"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            tag="${GITHUB_REF#refs/tags/}"
+            {
+              echo "tag=${tag}"
+              echo "name=Inkcut C++ ${tag}"
+              echo "prerelease=false"
+              echo "make_latest=true"
+              echo "is_continuous=false"
+            } >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "tag=continuous"
+              echo "name=Continuous build (main @ ${short_sha})"
+              echo "prerelease=true"
+              echo "make_latest=false"
+              echo "is_continuous=true"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      # For rolling releases we replace the previous "continuous" release wholesale
+      # so the release page shows only the freshest .deb files for the latest main.
+      - name: Remove previous "continuous" release
+        if: steps.rel.outputs.is_continuous == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete continuous \
+            --yes --cleanup-tag \
+            --repo "${{ github.repository }}" || true
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.rel.outputs.tag }}
+          name: ${{ steps.rel.outputs.name }}
+          prerelease: ${{ steps.rel.outputs.prerelease }}
+          make_latest: ${{ steps.rel.outputs.make_latest }}
+          generate_release_notes: true
+          target_commitish: ${{ github.sha }}
+          body: |
+            Automated build of `${{ github.repository }}` from
+            commit [`${{ github.sha }}`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+            on branch/ref `${{ github.ref_name }}`.
+
+            **Packages**
+
+            | Distro | Arch | File |
+            |---|---|---|
+            | Ubuntu 22.04 (jammy) | amd64  | `inkcut-cpp_*_jammy_amd64.deb` |
+            | Ubuntu 22.04 (jammy) | arm64  | `inkcut-cpp_*_jammy_arm64.deb` |
+            | Ubuntu 22.04 (jammy) | armhf  | `inkcut-cpp_*_jammy_armhf.deb` (RK3128, RPi 2/3 32-bit) |
+            | Ubuntu 24.04 (noble) | amd64  | `inkcut-cpp_*_noble_amd64.deb` |
+            | Ubuntu 24.04 (noble) | arm64  | `inkcut-cpp_*_noble_arm64.deb` |
+            | Ubuntu 24.04 (noble) | armhf  | `inkcut-cpp_*_noble_armhf.deb` |
+
+            SHA-256 checksums are in `SHA256SUMS.txt`.
+
+            Install with:
+
+            ```bash
+            sudo apt install ./inkcut-cpp_*_<codename>_<arch>.deb
+            ```
           files: |
             dist/*.deb
             dist/SHA256SUMS.txt
-          generate_release_notes: true
-          draft: false
-          prerelease: false

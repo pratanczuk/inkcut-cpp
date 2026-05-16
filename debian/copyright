@@ -1,7 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: inkcut-cpp
 Upstream-Contact: pratanczuk <pratanczuk@users.noreply.github.com>
-Source: https://github.com/pratanczuk/inkcut-cpp-
+Source: https://github.com/pratanczuk/inkcut-cpp
 
 Files: *
 Copyright: 2026 pratanczuk and contributors

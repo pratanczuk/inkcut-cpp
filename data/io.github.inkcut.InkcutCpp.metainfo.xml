@@ -31,9 +31,9 @@
     </ul>
   </description>
   <launchable type="desktop-id">io.github.inkcut.InkcutCpp.desktop</launchable>
-  <url type="homepage">https://github.com/pratanczuk/inkcut-cpp-</url>
-  <url type="bugtracker">https://github.com/pratanczuk/inkcut-cpp-/issues</url>
-  <url type="vcs-browser">https://github.com/pratanczuk/inkcut-cpp-</url>
+  <url type="homepage">https://github.com/pratanczuk/inkcut-cpp</url>
+  <url type="bugtracker">https://github.com/pratanczuk/inkcut-cpp/issues</url>
+  <url type="vcs-browser">https://github.com/pratanczuk/inkcut-cpp</url>
   <developer_name>pratanczuk and contributors (port of Inkcut by Jairus Martin et al.)</developer_name>
   <provides>
     <binary>inkcut-gui</binary>
