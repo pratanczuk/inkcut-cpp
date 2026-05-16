@@ -134,7 +134,14 @@ jobs:
 
       - name: Build inside ${{ matrix.image }}
         run: |
+          # --privileged + seccomp=unconfined: under qemu-user emulation
+          # the default Docker seccomp profile blocks some syscalls
+          # (e.g. fcntl variants on the dpkg lock file), which surfaces
+          # as misleading EACCES from apt-get install. Allow everything;
+          # the runner is ephemeral.
           docker run --rm --platform linux/arm/v7 \
+            --privileged \
+            --security-opt seccomp=unconfined \
             -v "${{ github.workspace }}:/src" -w /src \
             -e DEBIAN_FRONTEND=noninteractive \
             ${{ matrix.image }} bash -eux -c '
