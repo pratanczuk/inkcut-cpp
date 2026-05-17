@@ -1961,8 +1961,8 @@ void MainWindow::onExportProgram()
     }
 
     const QString out_path =
-        QFileDialog::getSaveFileName(this, trInk("Zapisz"), QStringLiteral("job.hpgl"),
-                                     QStringLiteral("Program (*.hpgl *.plt *.txt);;Wszystkie (*)"));
+        QFileDialog::getSaveFileName(this, trInk("Zapisz"), QStringLiteral("job.gcode"),
+                                     QStringLiteral("Program (*.gcode *.nc *.txt);;Wszystkie (*)"));
     if (out_path.isEmpty())
         return;
 
@@ -2991,8 +2991,7 @@ bool MainWindow::confirmSendApproval(const PlotJobSettings& job, const QPainterP
     dlg.setWindowTitle(QStringLiteral("Zatwierdzenie zadania"));
     auto* form = new QFormLayout(&dlg);
     form->addRow(QStringLiteral("Plik"), new QLabel(QFileInfo(current_file_).fileName()));
-    form->addRow(trInk("Protokół"),
-                 new QLabel(plotProtocolToCli(job.protocol.protocol)));
+    form->addRow(trInk("Protokół"), new QLabel(QStringLiteral("gcode")));
     form->addRow(trInk("Kopie"), new QLabel(QString::number(job.layout.copies)));
     form->addRow(trInk("Materiał"),
                  new QLabel(QStringLiteral("%1 × %2")

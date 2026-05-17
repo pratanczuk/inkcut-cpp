@@ -33,7 +33,7 @@ void print_usage()
         << "Użycie:\n"
         << "  inkcut-cpp send --port DEVICE [--baud N] [--pad] [--dry-run] [--protocol …] FILE\n"
         << "      Pliki .svg / .dxf są zamieniane na program plotera (jak svg-convert).\n"
-        << "  inkcut-cpp rect ... [--protocol hpgl] [--pad]\n"
+        << "  inkcut-cpp rect ... [--protocol gcode]\n"
         << "  inkcut-cpp svg-convert INPUT.svg [opcje] [--out FILE|-]\n"
         << "  inkcut-cpp dxf-convert INPUT.dxf [opcje] [--out FILE|-]\n"
         << "  inkcut-cpp job-export INPUT.svg|dxf [opcje] [--out FILE|-]\n"
@@ -41,8 +41,7 @@ void print_usage()
         << "  inkcut-cpp job-run JOB.json [--port DEVICE] [--baud N] [--pad] [--dry-run]\n"
         << "      Wczytuje inkcut-job JSON, odtwarza geometrię ze ścieżki źródłowej i wysyła jak send.\n\n"
         << "svg-convert / dxf-convert / job-export / send (wektor):\n"
-        << "  --protocol hpgl|dmpl|gpgl|gcode|camm\n"
-        << "  --dmpl-mode N          tryb DMPL (1,2,3,4,6)\n"
+        << "  --protocol gcode\n"
         << "  --step S               próbkowanie krzywych (jednostki użytkownika)\n"
         << "  --velocity VS\n"
         << "  --order normal|reversed|min-x|max-x|min-y|max-y|shortest|hilbert|zcurve\n"
@@ -110,15 +109,7 @@ bool consume_plot_job_setting(const QStringList& args, int& i, PlotJobSettings& 
         ++i;
         return true;
     }
-    if (tok == QLatin1String("--dmpl-mode")) {
-        if (i + 1 >= args.size())
-            return bad("send: brak wartości dla --dmpl-mode");
-        job.protocol.dmpl_mode = args.at(++i).toInt();
-        ++i;
-        return true;
-    }
     if (tok == QLatin1String("--pad")) {
-        job.protocol.hpgl_pad = true;
         ++i;
         return true;
     }
@@ -415,7 +406,7 @@ int cmd_rect(const QStringList& args)
     int velocity = -1;
     QString out_path = QLatin1String("-");
     PlotJobSettings job;
-    job.protocol.protocol = PlotProtocol::HPGL;
+    job.protocol.protocol = PlotProtocol::GCode;
 
     for (int i = 2; i < args.size(); ++i) {
         const QByteArray a = args.at(i).toUtf8();
@@ -435,7 +426,6 @@ int cmd_rect(const QStringList& args)
         } else if (streq(s, "--protocol") && i + 1 < args.size()) {
             job.protocol.protocol = inkcut::plotProtocolFromCli(args.at(++i));
         } else if (streq(s, "--pad")) {
-            job.protocol.hpgl_pad = true;
         } else {
             std::cerr << "Nieznana opcja: " << s << "\n";
             return 2;

@@ -1,24 +1,10 @@
-inkcut-cpp (0.3.2-1) UNRELEASED; urgency=medium
+inkcut-cpp (0.4.0-1) UNRELEASED; urgency=medium
 
-  * Device setup: redesigned Connection tab with full serial parameters
-    (data bits, parity, stop bits, hardware/software flow control) and
-    auto-detected port list with a refresh button.
-  * Removed CUPS printer transport from the UI (kept for legacy job JSON).
-  * Driver presets now force a compatible Protocol; the Protocol combo is
-    locked unless "Custom" is checked.
-  * G-code: new "Solenoid PWM" lift mode for DIY plotters with a solenoid
-    on the GRBL spindle pin — emits M3 S<down> on pen-down and M5 (or
-    M3 S<up>) on pen-up. New "DIY · GRBL Solenoid PWM" preset.
-  * G-code: optional Feed (mm/min) fields appended to every G1/G0.
-  * Speed (VS/!V) label clarified to "Speed (cm/s)" with tooltip.
-  * Control panel: Pen up / Pen down now correctly emit M3/M5 / lift
-    G-code on the very first press (previously skipped a transition).
-  * Device setup dialog inherits the main window size instead of
-    maximizing on tablet profile; Connection tab packs cleanly without
-    floating labels.
-  * Full Polish/English translations refreshed via scripts/sync_translations.py.
+  * Product focus narrowed to G-code/GRBLHAL only.
+  * Removed non-G-code protocol choices from UI and CLI defaults.
+  * Streamlined device presets and protocol tests for G-code-only flow.
 
- -- pratanczuk <pratanczuk@users.noreply.github.com>  Sat, 16 May 2026 23:35:00 +0200
+ -- pratanczuk <pratanczuk@users.noreply.github.com>  Sun, 17 May 2026 13:45:00 +0200
 
 inkcut-cpp (0.2.0-1) UNRELEASED; urgency=medium
 

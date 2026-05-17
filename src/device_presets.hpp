@@ -13,7 +13,7 @@ struct DevicePreset {
     QString model;
     double material_width = 600;
     double material_height = 400;
-    PlotProtocol default_protocol = PlotProtocol::HPGL;
+    PlotProtocol default_protocol = PlotProtocol::GCode;
     int dmpl_mode = 1;
     bool swap_xy = false;
     bool mirror_x = false;

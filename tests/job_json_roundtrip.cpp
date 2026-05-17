@@ -15,8 +15,8 @@ int main(int argc, char** argv)
     inkcut::PlotJobSettings original;
     original.order = inkcut::OrderStrategy::ShortestPath;
     original.flatten_step = 0.25;
-    original.protocol.protocol = inkcut::PlotProtocol::DMPL;
-    original.protocol.dmpl_mode = 3;
+    original.protocol.protocol = inkcut::PlotProtocol::GCode;
+    original.protocol.gcode.feed_mm_min = 700;
 
     const QString json = inkcut::exportJobDocumentToJson(QStringLiteral("/demo.svg"),
                                                          QStringLiteral("svg"), QRectF(1, 2, 3, 4),
@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 
     if (loaded.flatten_step != original.flatten_step || loaded.order != original.order
         || loaded.protocol.protocol != original.protocol.protocol
-        || loaded.protocol.dmpl_mode != original.protocol.dmpl_mode)
+        || loaded.protocol.gcode.feed_mm_min != original.protocol.gcode.feed_mm_min)
         return 2;
 
     return 0;

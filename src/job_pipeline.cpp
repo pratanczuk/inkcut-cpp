@@ -249,34 +249,15 @@ std::string buildPlotProgram(const QPainterPath& raw_path, const PlotJobSettings
 
 PlotProtocol plotProtocolFromCli(QStringView name)
 {
-    if (name.compare(QLatin1String("hpgl"), Qt::CaseInsensitive) == 0)
-        return PlotProtocol::HPGL;
-    if (name.compare(QLatin1String("dmpl"), Qt::CaseInsensitive) == 0)
-        return PlotProtocol::DMPL;
-    if (name.compare(QLatin1String("gpgl"), Qt::CaseInsensitive) == 0)
-        return PlotProtocol::GPGL;
     if (name.compare(QLatin1String("gcode"), Qt::CaseInsensitive) == 0)
         return PlotProtocol::GCode;
-    if (name.compare(QLatin1String("camm"), Qt::CaseInsensitive) == 0)
-        return PlotProtocol::CAMM_GL1;
-    return PlotProtocol::HPGL;
+    return PlotProtocol::GCode;
 }
 
 QString plotProtocolToCli(PlotProtocol p)
 {
-    switch (p) {
-    case PlotProtocol::HPGL:
-        return QStringLiteral("hpgl");
-    case PlotProtocol::DMPL:
-        return QStringLiteral("dmpl");
-    case PlotProtocol::GPGL:
-        return QStringLiteral("gpgl");
-    case PlotProtocol::GCode:
-        return QStringLiteral("gcode");
-    case PlotProtocol::CAMM_GL1:
-        return QStringLiteral("camm");
-    }
-    return QStringLiteral("hpgl");
+    Q_UNUSED(p);
+    return QStringLiteral("gcode");
 }
 
 QString orderStrategyToCli(OrderStrategy o)

@@ -15,7 +15,7 @@ target_link_libraries(inkcut_test_job_replay PRIVATE inkcut_core Qt6::Gui)
 add_executable(inkcut_test_svg_path svg_path_parse.cpp)
 target_link_libraries(inkcut_test_svg_path PRIVATE inkcut_core Qt6::Gui)
 
-add_executable(inkcut_test_protocol protocol_hpgl_smoke.cpp)
+add_executable(inkcut_test_protocol protocol_gcode_smoke.cpp)
 target_link_libraries(inkcut_test_protocol PRIVATE inkcut_core Qt6::Core)
 
 add_executable(inkcut_test_grbl_comm grbl_comm_smoke.cpp)
@@ -43,7 +43,7 @@ set_tests_properties(svg_path_parse PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
 )
 
-add_test(NAME protocol_hpgl_smoke COMMAND inkcut_test_protocol)
+add_test(NAME protocol_gcode_smoke COMMAND inkcut_test_protocol)
 add_test(NAME grbl_comm_smoke COMMAND inkcut_test_grbl_comm)
 add_test(
     NAME grbl_sim_integration

@@ -22,63 +22,35 @@ void PlotStreamEncoder::set_initial_pen_up(bool pen_up)
 
 void PlotStreamEncoder::write_payload(std::string data)
 {
-    if (s_.protocol == PlotProtocol::HPGL && s_.hpgl_pad)
-        data.push_back('\n');
     sink_(std::move(data));
 }
 
 void PlotStreamEncoder::connection_made()
 {
-    switch (s_.protocol) {
-    case PlotProtocol::HPGL:
-        write_payload("IN;");
-        break;
-    case PlotProtocol::DMPL: {
-        const int v = s_.dmpl_mode;
-        if (v == 1)
-            write_payload(";:HAEC1");
-        else if (v == 2)
-            write_payload(" ;:ECN A L0 ");
-        else if (v == 3 || v == 4)
-            write_payload(" ;:H A L0 ");
-        else if (v == 6)
-            write_payload("IN;PA;");
-        break;
-    }
-    case PlotProtocol::GPGL:
-        write_payload(std::string{'\x03', '\x03', 'H'});
-        break;
-    case PlotProtocol::GCode:
-        if (s_.gcode.use_builtin) {
-            if (s_.gcode.dialect == GCodeProtocolSettings::Dialect::Grbl) {
-                write_payload("G21; mm\n");
-                write_payload("G90; absolute\n");
-                if (s_.gcode.lift_mode == GCodeProtocolSettings::ZAxis) {
-                    const int prec = s_.gcode.precision;
-                    write_payload(
-                        QStringLiteral("G0 Z%1; pen up\n")
-                            .arg(s_.gcode.upper_z, 0, 'f', prec)
-                            .toStdString());
-                }
-            } else {
-                write_payload("G28; Return to home\n");
-                write_payload("G98; Return to initial z\n");
-                write_payload("G90; Use absolute coordinates\n");
-            }
-        }
-        if (s_.gcode.lift_mode == GCodeProtocolSettings::SolenoidPwm) {
-            const int up = s_.gcode.solenoid_pwm_up;
-            if (up <= 0)
-                write_payload("M5; pen up (solenoid off)\n");
-            else
+    if (s_.gcode.use_builtin) {
+        if (s_.gcode.dialect == GCodeProtocolSettings::Dialect::Grbl) {
+            write_payload("G21; mm\n");
+            write_payload("G90; absolute\n");
+            if (s_.gcode.lift_mode == GCodeProtocolSettings::ZAxis) {
+                const int prec = s_.gcode.precision;
                 write_payload(
-                    QStringLiteral("M3 S%1; pen up\n").arg(up).toStdString());
-            gcode_currently_up_ = true;
+                    QStringLiteral("G0 Z%1; pen up\n")
+                        .arg(s_.gcode.upper_z, 0, 'f', prec)
+                        .toStdString());
+            }
+        } else {
+            write_payload("G28; Return to home\n");
+            write_payload("G98; Return to initial z\n");
+            write_payload("G90; Use absolute coordinates\n");
         }
-        break;
-    case PlotProtocol::CAMM_GL1:
-        write_payload("IN;");
-        break;
+    }
+    if (s_.gcode.lift_mode == GCodeProtocolSettings::SolenoidPwm) {
+        const int up = s_.gcode.solenoid_pwm_up;
+        if (up <= 0)
+            write_payload("M5; pen up (solenoid off)\n");
+        else
+            write_payload(QStringLiteral("M3 S%1; pen up\n").arg(up).toStdString());
+        gcode_currently_up_ = true;
     }
 }
 
@@ -86,41 +58,8 @@ void PlotStreamEncoder::connection_lost()
 {
 }
 
-void PlotStreamEncoder::move_hpgl(double x, double y, double z, bool absolute)
-{
-    const int ix = static_cast<int>(std::lround(x * s_.plot_scale));
-    const int iy = static_cast<int>(std::lround(y * s_.plot_scale));
-    std::ostringstream os;
-    if (absolute)
-        os << (z != 0.0 ? "PD" : "PU") << ix << ',' << iy << ';';
-    else
-        os << "PR" << ix << ',' << iy << ';';
-    write_payload(os.str());
-}
 
-void PlotStreamEncoder::move_dmpl(double x, double y, double z, bool absolute)
-{
-    Q_UNUSED(absolute);
-    const int ix = static_cast<int>(std::lround(x * s_.plot_scale));
-    const int iy = static_cast<int>(std::lround(y * s_.plot_scale));
-    const int v = s_.dmpl_mode;
-    std::ostringstream os;
-    if (v >= 1 && v <= 4)
-        os << ' ' << (z != 0.0 ? 'D' : 'U') << ix << ',' << iy << ' ';
-    else
-        os << (z != 0.0 ? "PD" : "PU") << ix << ',' << iy << ';';
-    write_payload(os.str());
-}
 
-void PlotStreamEncoder::move_gpgl(double x, double y, double z, bool absolute)
-{
-    Q_UNUSED(absolute);
-    const int ix = static_cast<int>(std::lround(x));
-    const int iy = static_cast<int>(std::lround(y));
-    std::ostringstream os;
-    os << '\x03' << (z != 0.0 ? 'D' : 'M') << ix << ',' << iy;
-    write_payload(os.str());
-}
 
 void PlotStreamEncoder::send_gcode_block(const QString& commands)
 {
@@ -192,123 +131,43 @@ void PlotStreamEncoder::move_gcode(double x, double y, double z, bool absolute)
     send_gcode_block(line);
 }
 
-void PlotStreamEncoder::move_camm(double x, double y, double z, bool absolute)
-{
-    Q_UNUSED(absolute);
-    std::ostringstream os;
-    os << (z != 0.0 ? 'D' : 'M') << x << ',' << y << ';';
-    write_payload(os.str());
-}
 
 void PlotStreamEncoder::move(double x, double y, double z, bool absolute)
 {
-    switch (s_.protocol) {
-    case PlotProtocol::HPGL:
-        move_hpgl(x, y, z, absolute);
-        break;
-    case PlotProtocol::DMPL:
-        move_dmpl(x, y, z, absolute);
-        break;
-    case PlotProtocol::GPGL:
-        move_gpgl(x, y, z, absolute);
-        break;
-    case PlotProtocol::GCode:
-        move_gcode(x, y, z, absolute);
-        break;
-    case PlotProtocol::CAMM_GL1:
-        move_camm(x, y, z, absolute);
-        break;
-    }
+    move_gcode(x, y, z, absolute);
 }
 
 void PlotStreamEncoder::set_force(int f)
 {
-    switch (s_.protocol) {
-    case PlotProtocol::HPGL:
-        write_payload("FS" + std::to_string(f) + "; ");
-        break;
-    case PlotProtocol::DMPL:
-        write_payload("BP" + std::to_string(f) + ' ');
-        break;
-    case PlotProtocol::GPGL:
-        write_payload(std::string{'\x03', 'F', 'X'} + std::to_string(f) + ",1");
-        break;
-    case PlotProtocol::GCode:
-        break;
-    case PlotProtocol::CAMM_GL1:
-        write_payload("FS" + std::to_string(f) + ';');
-        break;
-    }
+    Q_UNUSED(f);
 }
 
 void PlotStreamEncoder::set_velocity(int v)
 {
-    switch (s_.protocol) {
-    case PlotProtocol::HPGL:
-        write_payload("VS" + std::to_string(v) + ';');
-        break;
-    case PlotProtocol::DMPL:
-        write_payload("V" + std::to_string(v) + ' ');
-        break;
-    case PlotProtocol::GPGL:
-        write_payload(std::string{'\x03', '!'} + std::to_string(v));
-        break;
-    case PlotProtocol::GCode:
-        break;
-    case PlotProtocol::CAMM_GL1:
-        write_payload("VS" + std::to_string(v) + ';');
-        break;
-    }
+    Q_UNUSED(v);
 }
 
 void PlotStreamEncoder::set_pen(int p)
 {
-    switch (s_.protocol) {
-    case PlotProtocol::HPGL:
-        write_payload("SP" + std::to_string(p) + ';');
-        break;
-    case PlotProtocol::DMPL:
-        write_payload("EC" + std::to_string(p) + ' ');
-        break;
-    case PlotProtocol::GPGL:
-        break;
-    case PlotProtocol::GCode:
-        break;
-    case PlotProtocol::CAMM_GL1:
-        write_payload("SP" + std::to_string(p) + ';');
-        break;
-    }
+    Q_UNUSED(p);
 }
 
 void PlotStreamEncoder::finish()
 {
-    switch (s_.protocol) {
-    case PlotProtocol::HPGL:
-        write_payload("IN;");
-        break;
-    case PlotProtocol::DMPL:
-        break;
-    case PlotProtocol::GPGL:
-        break;
-    case PlotProtocol::GCode:
-        if (s_.gcode.use_builtin) {
-            if (s_.gcode.dialect == GCodeProtocolSettings::Dialect::Grbl) {
-                if (s_.gcode.lift_mode == GCodeProtocolSettings::ZAxis) {
-                    const int prec = s_.gcode.precision;
-                    write_payload(
-                        QStringLiteral("G0 Z%1; pen up\n")
-                            .arg(s_.gcode.upper_z, 0, 'f', prec)
-                            .toStdString());
-                }
-                write_payload("M5\n");
-            } else {
-                write_payload("G28; Return to home\n");
-                write_payload("G98; Return to initial z\n");
+    if (s_.gcode.use_builtin) {
+        if (s_.gcode.dialect == GCodeProtocolSettings::Dialect::Grbl) {
+            if (s_.gcode.lift_mode == GCodeProtocolSettings::ZAxis) {
+                const int prec = s_.gcode.precision;
+                write_payload(
+                    QStringLiteral("G0 Z%1; pen up\n")
+                        .arg(s_.gcode.upper_z, 0, 'f', prec)
+                        .toStdString());
             }
+            write_payload("M5\n");
+        } else {
+            write_payload("G28; Return to home\n");
+            write_payload("G98; Return to initial z\n");
         }
-        break;
-    case PlotProtocol::CAMM_GL1:
-        break;
     }
 }
 
@@ -338,8 +197,6 @@ std::string encode_move_absolute_user_xy(double x, double y, double z, const Pro
 
 std::string encode_set_origin_user_xy(double x, double y, const ProtocolSettings& ps)
 {
-    if (ps.protocol != PlotProtocol::GCode)
-        return {};
     std::string acc;
     PlotStreamEncoder enc([&](std::string chunk) { acc += std::move(chunk); }, ps);
     const int prec = ps.gcode.precision;

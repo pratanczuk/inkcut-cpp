@@ -49,7 +49,7 @@ private:
     QByteArray payload_;
     DeviceSetup* device_ = nullptr;
     ProtocolSettings protocol_;
-    PlotProtocol live_protocol_ = PlotProtocol::HPGL;
+    PlotProtocol live_protocol_ = PlotProtocol::GCode;
     double live_plot_scale_ = 1021.0 / 90.0;
     QMap<int, double> grbl_settings_cache_;
     std::atomic<bool> paused_{false};

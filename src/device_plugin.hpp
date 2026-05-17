@@ -30,7 +30,7 @@ public:
     virtual QVector<SerialDeviceDescriptor> probeSerialPorts() const { return { }; }
 
     /// Sugerowany protokół po wyborze wtyczki (opcjonalnie).
-    virtual PlotProtocol suggestedProtocol() const { return PlotProtocol::HPGL; }
+    virtual PlotProtocol suggestedProtocol() const { return PlotProtocol::GCode; }
 
     /// Transformacja ścieżki specyficzna dla urządzenia (swap_xy, lustro, skala).
     virtual QPainterPath transformPath(const QPainterPath& path) const;

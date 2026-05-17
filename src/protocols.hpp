@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-/** Unified plot protocol encoder (HPGL, DMPL, GPGL, G-code, CAMM GL-1). */
+/** Unified plot protocol encoder (G-code / GRBL). */
 
 #pragma once
 
@@ -11,11 +11,7 @@
 namespace inkcut {
 
 enum class PlotProtocol {
-    HPGL,
-    DMPL,
-    GPGL,
     GCode,
-    CAMM_GL1,
 };
 
 struct GCodeProtocolSettings {
@@ -41,11 +37,10 @@ struct GCodeProtocolSettings {
 };
 
 struct ProtocolSettings {
-    PlotProtocol protocol = PlotProtocol::HPGL;
+    PlotProtocol protocol = PlotProtocol::GCode;
+    /// Legacy fields kept for backward compatibility in saved jobs.
     bool hpgl_pad = false;
-    /// DMPL mode per upstream (1,2,3,4,6)
     int dmpl_mode = 1;
-    /// Scale used by HPGL/DMPL (user units → plotter units)
     double plot_scale = 1021.0 / 90.0;
     GCodeProtocolSettings gcode;
 };
@@ -66,18 +61,14 @@ public:
     void finish();
     void connection_lost();
 
-    /// Własne komendy (G-code lub HPGL/DMPL jako tekst, linie rozdzielone \\n).
+    /// Własne komendy G-code, linie rozdzielone \\n.
     void send_command_block(const QString& commands);
 
 private:
     void write_payload(std::string data);
     void send_gcode_block(const QString& commands);
 
-    void move_hpgl(double x, double y, double z, bool absolute);
-    void move_dmpl(double x, double y, double z, bool absolute);
-    void move_gpgl(double x, double y, double z, bool absolute);
     void move_gcode(double x, double y, double z, bool absolute);
-    void move_camm(double x, double y, double z, bool absolute);
 
     std::function<void(std::string)> sink_;
     ProtocolSettings s_;
@@ -86,7 +77,7 @@ private:
 
 void append_polyline_plot(PlotStreamEncoder& enc, const std::vector<QPointF>& poly);
 
-/// Pojedynczy absolutny ruch z piórem w górze (`z == 0` → PU/U/G0 wg protokołu), bez nagłówka połączenia.
+/// Pojedynczy absolutny ruch z piórem w górze (`z == 0` -> G0), bez nagłówka połączenia.
 /// Jednostki użytkownika jak `PlotStreamEncoder::move(..., absolute=true)`.
 std::string encode_pen_up_absolute_user_xy(double x, double y, const ProtocolSettings& ps);
 
@@ -97,7 +88,7 @@ std::string encode_pen_up_absolute_user_xy(double x, double y, const ProtocolSet
 std::string encode_move_absolute_user_xy(double x, double y, double z, const ProtocolSettings& ps,
                                          bool previous_pen_up = true);
 
-/// Ustawienie bieżącej pozycji jako początek (G92 dla G-code, brak dla HPGL).
+/// Ustawienie bieżącej pozycji jako początek (G92).
 std::string encode_set_origin_user_xy(double x, double y, const ProtocolSettings& ps);
 
 } // namespace inkcut

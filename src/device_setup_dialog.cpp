@@ -87,7 +87,7 @@ struct DeviceProfile {
     DeviceSetup device;
     double width = 600;
     double height = 400;
-    PlotProtocol protocol = PlotProtocol::HPGL;
+    PlotProtocol protocol = PlotProtocol::GCode;
     int dmpl_mode = 1;
     double plot_scale = 1021.0 / 90.0;
     bool hpgl_pad = false;
@@ -115,19 +115,8 @@ struct DeviceProfile {
 
 QString protocolLabel(PlotProtocol p)
 {
-    switch (p) {
-    case PlotProtocol::HPGL:
-        return QStringLiteral("HPGL");
-    case PlotProtocol::DMPL:
-        return QStringLiteral("DMPL");
-    case PlotProtocol::GPGL:
-        return QStringLiteral("GPGL");
-    case PlotProtocol::GCode:
-        return QStringLiteral("G-code");
-    case PlotProtocol::CAMM_GL1:
-        return QStringLiteral("CAMM GL-1");
-    }
-    return QStringLiteral("HPGL");
+    Q_UNUSED(p);
+    return QStringLiteral("G-code");
 }
 
 void fillPresetCombo(QComboBox* combo)
@@ -721,17 +710,10 @@ private:
         auto* pform = new QFormLayout(proto);
         styleFormLayout(pform, ui_profile_);
         protocol_combo_ = new QComboBox(proto);
-        protocol_combo_->addItem(protocolLabel(PlotProtocol::HPGL), int(PlotProtocol::HPGL));
-        protocol_combo_->addItem(protocolLabel(PlotProtocol::DMPL), int(PlotProtocol::DMPL));
-        protocol_combo_->addItem(protocolLabel(PlotProtocol::GPGL), int(PlotProtocol::GPGL));
         protocol_combo_->addItem(protocolLabel(PlotProtocol::GCode), int(PlotProtocol::GCode));
-        protocol_combo_->addItem(protocolLabel(PlotProtocol::CAMM_GL1), int(PlotProtocol::CAMM_GL1));
-        dmpl_spin_ = new QSpinBox(proto);
-        dmpl_spin_->setRange(1, 6);
         plot_scale_spin_ = new QDoubleSpinBox(proto);
         plot_scale_spin_->setRange(0.001, 100000);
         plot_scale_spin_->setDecimals(4);
-        hpgl_pad_chk_ = new QCheckBox(trInk("Dopełnianie linii (HPGL pad)"), proto);
         gcode_builtin_chk_ = new QCheckBox(trInk("Wbudowane komendy start/stop"), proto);
         gcode_lift_combo_ = new QComboBox(proto);
         gcode_lift_combo_->addItem(QStringLiteral("Implicit (G00/G01)"),
@@ -755,9 +737,7 @@ private:
             s->setRange(-999, 999);
             s->setDecimals(3);
         }
-        dmpl_row_label_ = new QLabel(trInk("Tryb DMPL"), proto);
         plot_scale_row_label_ = new QLabel(trInk("Skala plotera"), proto);
-        hpgl_pad_row_widget_ = hpgl_pad_chk_;
         gcode_group_ = new QGroupBox(trInk("G-code / GRBL"), proto);
         auto* gcode_form = new QFormLayout(gcode_group_);
         gcode_form->addRow(gcode_builtin_chk_);
@@ -793,9 +773,7 @@ private:
         gcode_form->addRow(pwm_max_label_, pwm_max_spin_);
 
         pform->addRow(trInk("Język"), protocol_combo_);
-        pform->addRow(dmpl_row_label_, dmpl_spin_);
         pform->addRow(plot_scale_row_label_, plot_scale_spin_);
-        pform->addRow(hpgl_pad_row_widget_);
         pform->addRow(gcode_group_);
         tabs_->addTab(wrapTabInScroll(proto), trInk("Protokół"));
 
@@ -926,7 +904,7 @@ private:
         QObject::connect(browse_btn_, &QPushButton::clicked, dlg_, [this]() {
             const QString path = QFileDialog::getSaveFileName(
                 dlg_, trInk("Plik wyjściowy"), output_edit_->text(),
-                trInk("Program (*.hpgl *.plt *.prn);;Wszystkie (*)"));
+                trInk("Program (*.gcode *.nc *.txt);;Wszystkie (*)"));
             if (!path.isEmpty())
                 output_edit_->setText(path);
         });
@@ -987,9 +965,7 @@ private:
         flow_xon_chk_->setChecked(p.device.flow_xon_xoff);
         output_edit_->setText(p.device.output_path);
         protocol_combo_->setCurrentIndex(protocol_combo_->findData(int(p.protocol)));
-        dmpl_spin_->setValue(p.dmpl_mode);
         plot_scale_spin_->setValue(p.plot_scale);
-        hpgl_pad_chk_->setChecked(p.hpgl_pad);
         gcode_builtin_chk_->setChecked(p.gcode_builtin);
         gcode_dialect_combo_->setCurrentIndex(
             gcode_dialect_combo_->findData(int(p.gcode_dialect)));
@@ -1058,9 +1034,7 @@ private:
         p.device.flow_xon_xoff = flow_xon_chk_->isChecked();
         p.device.output_path = output_edit_->text().trimmed();
         p.protocol = static_cast<PlotProtocol>(protocol_combo_->currentData().toInt());
-        p.dmpl_mode = dmpl_spin_->value();
         p.plot_scale = plot_scale_spin_->value();
-        p.hpgl_pad = hpgl_pad_chk_->isChecked();
         p.gcode_builtin = gcode_builtin_chk_->isChecked();
         p.gcode_dialect = static_cast<GCodeProtocolSettings::Dialect>(
             gcode_dialect_combo_->currentData().toInt());
@@ -1109,8 +1083,7 @@ private:
         updateProtocolLockedByPreset();
     }
 
-    /// Gdy „Własne” jest wyłączone, protokół jest zsynchronizowany z presetem
-    /// i zablokowany — żeby nie wysyłać HPGL na np. urządzenie GRBL.
+    /// Gdy „Własne” jest wyłączone, protokół jest zsynchronizowany z presetem.
     void updateProtocolLockedByPreset()
     {
         if (!protocol_combo_ || !custom_chk_ || !driver_combo_)
@@ -1136,15 +1109,8 @@ private:
 
     void updateProtocolTabVisibility()
     {
-        const auto proto =
-            static_cast<PlotProtocol>(protocol_combo_->currentData().toInt());
-        const bool is_hpgl = proto == PlotProtocol::HPGL;
-        const bool is_dmpl = proto == PlotProtocol::DMPL;
-        const bool is_gcode = proto == PlotProtocol::GCode;
-        dmpl_row_label_->setVisible(is_dmpl);
-        dmpl_spin_->setVisible(is_dmpl);
-        hpgl_pad_chk_->setVisible(is_hpgl);
-        gcode_group_->setVisible(is_gcode);
+        const bool is_gcode = true;
+        gcode_group_->setVisible(true);
         const int lift = gcode_lift_combo_->currentData().toInt();
         const bool custom_lift = is_gcode && lift == int(GCodeProtocolSettings::Custom);
         const bool z_axis = is_gcode && lift == int(GCodeProtocolSettings::ZAxis);
@@ -1314,12 +1280,8 @@ private:
     QSpinBox* tcp_port_spin_ = nullptr;
 
     QComboBox* protocol_combo_ = nullptr;
-    QSpinBox* dmpl_spin_ = nullptr;
     QDoubleSpinBox* plot_scale_spin_ = nullptr;
-    QCheckBox* hpgl_pad_chk_ = nullptr;
-    QLabel* dmpl_row_label_ = nullptr;
     QLabel* plot_scale_row_label_ = nullptr;
-    QWidget* hpgl_pad_row_widget_ = nullptr;
     QGroupBox* gcode_group_ = nullptr;
     QCheckBox* gcode_builtin_chk_ = nullptr;
     QComboBox* gcode_dialect_combo_ = nullptr;

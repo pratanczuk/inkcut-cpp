@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     }
 
     inkcut::PlotJobSettings job;
-    job.protocol.protocol = inkcut::PlotProtocol::HPGL;
+    job.protocol.protocol = inkcut::PlotProtocol::GCode;
 
     const QString json =
         inkcut::exportJobDocumentToJson(QFileInfo(svg_path).absoluteFilePath(),
