@@ -33,7 +33,7 @@
         <translation>Automatic turdsize</translation>
     </message>
     <message><source>Bity danych</source><translation>Data bits</translation></message><message><source>Bity stopu</source><translation>Stop bits</translation></message><message><source>Brak</source><translation>None</translation></message><message><source>Brak danych lub urządzenia.</source><translation>No data or device.</translation></message>
-    <message><source>Brak geometrii w włączonych warstwach/kolorach.</source><translation>No geometry in enabled layers/colors.</translation></message>
+    <message><source>Brak danych — wyślij zadanie G-code, aby odczytać $$</source><translation>No data — send a G-code job to read $$</translation></message><message><source>Brak geometrii w włączonych warstwach/kolorach.</source><translation>No geometry in enabled layers/colors.</translation></message>
     <message>
         <source>Brak komendy — ustaw ją w Ustawienia → Sterowanie → Załaduj/Wyładuj materiał.</source>
         <translation>No command — set it in Settings → Control → Load/Unload material.</translation>
@@ -44,12 +44,12 @@
     <message><source>Brak wartości dla --out</source><translation>Missing value for --out</translation></message>
     <message><source>Brak wartości dla --port</source><translation>Missing value for --port</translation></message>
     <message><source>Brak wczytanego pliku.</source><translation>No file loaded.</translation></message>
-    <message><source>Brak ścieżki pliku wyjściowego.</source><translation>No output file path.</translation></message>
+    <message><source>Brak wybranych kluczy w odpowiedzi $$.</source><translation>No selected keys in $$ response.</translation></message><message><source>Brak ścieżki pliku wyjściowego.</source><translation>No output file path.</translation></message>
     <message>
         <source>Brak ścieżki — zmień parametry.</source>
         <translation>No path — adjust parameters.</translation>
     </message>
-    <message><source>Błąd zapisu na port.</source><translation>Error writing to port.</translation></message>
+    <message><source>Błąd zapisu na TCP.</source><translation>TCP write error.</translation></message><message><source>Błąd zapisu na port.</source><translation>Error writing to port.</translation></message>
     <message>
         <source>Cały dokument</source>
         <translation>Whole document</translation>
@@ -170,7 +170,7 @@ Blue — travel (move); gray — cut.</translation></message>
         <translation>Fill colors</translation>
     </message>
     <message><source>Kolumna</source><translation>Column</translation></message>
-    <message><source>Komendy wysyłane na port po kliknięciu Załaduj / Wyładuj w zakładce Sterowanie. Użyj \n na końcu linii, jeśli ploter tego wymaga (np. PG;\n). Wymagane połączenie z ploterem.</source><translation>Commands sent to the port when you click Load / Unload in the Control tab. Use \n at the end of a line if the plotter requires it (e.g. PG;\n). Plotter connection required.</translation></message>
+    <message><source>Komendy</source><translation>Commands</translation></message><message><source>Komendy wysyłane na port po kliknięciu Załaduj / Wyładuj w zakładce Sterowanie. Użyj \n na końcu linii, jeśli ploter tego wymaga (np. PG;\n). Wymagane połączenie z ploterem.</source><translation>Commands sent to the port when you click Load / Unload in the Control tab. Use \n at the end of a line if the plotter requires it (e.g. PG;\n). Plotter connection required.</translation></message>
     <message>
         <source>Konfiguracja urządzenia — Inkcut</source>
         <translation>Device setup — Inkcut</translation>
@@ -294,7 +294,7 @@ Blue — travel (move); gray — cut.</translation></message>
         <source>Nie można otworzyć portu do nasłuchu.</source>
         <translation>Cannot open port for listening.</translation>
     </message>
-    <message><source>Nie można przygotować obrazu do śledzenia.</source><translation>Cannot prepare image for tracing.</translation></message>
+    <message><source>Nie można połączyć TCP %1:%2</source><translation>Cannot connect TCP %1:%2</translation></message><message><source>Nie można przygotować obrazu do śledzenia.</source><translation>Cannot prepare image for tracing.</translation></message>
     <message><source>Nie można przygotować obrazu.</source><translation>Cannot prepare image.</translation></message>
     <message><source>Nie można uruchomić „lp” — zainstaluj CUPS lub zapisz plik ręcznie.</source><translation>Cannot run “lp” — install CUPS or save the file manually.</translation></message>
     <message><source>Nie można utworzyć pliku tymczasowego dla DXF.</source><translation>Cannot create temporary file for DXF.</translation></message>
@@ -446,7 +446,7 @@ Blue — travel (move); gray — cut.</translation></message>
 Wersja 0.2</source><translation>C++/Qt port of Inkcut.
 Version 0.2</translation></message>
     <message><source>Port szeregowy</source><translation>Serial port</translation></message>
-    <message><source>Posuw cięcia. Dodawany do każdego G1 jako F&lt;n&gt;. 0 = nie wysyłaj — wtedy obowiązują $110/$111 w GRBL lub wcześniej ustawione F. Typowo 600–1500 mm/min dla cięcia folii.</source><translation>Cutting feedrate. Appended to every G1 as F&lt;n&gt;. 0 = don’t send — GRBL’s $110/$111 or any previously set F applies. Typically 600–1500 mm/min for vinyl.</translation></message><message><source>Posuw przejazdów (G0). 0 = nie dodawaj F — GRBL używa wtedy $110/$111. Zwykle G0 i tak ignoruje F w GRBL.</source><translation>Rapid-move feedrate (G0). 0 = don’t append F — GRBL uses $110/$111. GRBL ignores F on G0 anyway.</translation></message><message>
+    <message><source>Posuw cięcia (G1). 0 = nie wysyłaj F — obowiązują $110/$111 w GRBL.</source><translation>Cutting feed (G1). 0 = don’t send F — GRBL’s $110/$111 apply.</translation></message><message><source>Posuw cięcia. Dodawany do każdego G1 jako F&lt;n&gt;. 0 = nie wysyłaj — wtedy obowiązują $110/$111 w GRBL lub wcześniej ustawione F. Typowo 600–1500 mm/min dla cięcia folii.</source><translation>Cutting feedrate. Appended to every G1 as F&lt;n&gt;. 0 = don’t send — GRBL’s $110/$111 or any previously set F applies. Typically 600–1500 mm/min for vinyl.</translation></message><message><source>Posuw przejazdów (G0). 0 = nie dodawaj F — GRBL używa wtedy $110/$111. Zwykle G0 i tak ignoruje F w GRBL.</source><translation>Rapid-move feedrate (G0). 0 = don’t append F — GRBL uses $110/$111. GRBL ignores F on G0 anyway.</translation></message><message><source>Posuw przejazdów (G0). 0 = nie dodawaj F.</source><translation>Travel feed (G0). 0 = don’t append F.</translation></message><message>
         <source>Potrace -t: usuwa drobne plamki (w pikselach).</source>
         <translation>Potrace -t: removes small specks (in pixels).</translation>
     </message>
@@ -495,7 +495,7 @@ Version 0.2</translation></message>
         <source>Przed cięciem</source>
         <translation>Before cutting</translation>
     </message>
-    <message><source>Przed zadaniem</source><translation>Before job</translation></message><message>
+    <message><source>Przed połączeniem</source><translation>Before connect</translation></message><message><source>Przed połączeniem (np. reset\n)</source><translation>Before connect (e.g. reset\n)</translation></message><message><source>Przed zadaniem</source><translation>Before job</translation></message><message>
         <source>Przeliczanie podglądu…</source>
         <translation>Updating preview…</translation>
     </message>
@@ -560,7 +560,7 @@ Version 0.2</translation></message>
         <source>Prędkość (VS/!V)</source>
         <translation>Speed (VS/!V)</translation>
     </message>
-    <message><source>Prędkość (baud)</source><translation>Baud rate</translation></message><message><source>Prędkość (cm/s)</source><translation>Speed (cm/s)</translation></message><message><source>Prędkość ruchu narzędzia. Dla HPGL/DMPL/GPGL/CAMM Inkcut wysyła komendę VS&lt;n&gt;; (typowo cm/s, zakres ~1–110 zależnie od plotera). Dla G-code parametr jest ignorowany — użyj pola Feed lub $110/$111 w GRBL.</source><translation>Tool travel speed. For HPGL/DMPL/GPGL/CAMM Inkcut sends VS&lt;n&gt;; (typically cm/s, range ~1–110 depending on plotter). For G-code this is ignored — use the Feed field or GRBL’s $110/$111.</translation></message><message><source>Rozmiar</source><translation>Size</translation></message>
+    <message><source>Prędkość (baud)</source><translation>Baud rate</translation></message><message><source>Prędkość (cm/s)</source><translation>Speed (cm/s)</translation></message><message><source>Prędkość cięcia (VS). Typowo cm/s, zakres ~1–110 zależnie od plotera.</source><translation>Cutting speed (VS). Usually cm/s; range ~1–110 depends on plotter.</translation></message><message><source>Prędkość ruchu narzędzia. Dla HPGL/DMPL/GPGL/CAMM Inkcut wysyła komendę VS&lt;n&gt;; (typowo cm/s, zakres ~1–110 zależnie od plotera). Dla G-code parametr jest ignorowany — użyj pola Feed lub $110/$111 w GRBL.</source><translation>Tool travel speed. For HPGL/DMPL/GPGL/CAMM Inkcut sends VS&lt;n&gt;; (typically cm/s, range ~1–110 depending on plotter). For G-code this is ignored — use the Feed field or GRBL’s $110/$111.</translation></message><message><source>Rozmiar</source><translation>Size</translation></message>
     <message>
         <source>Rozmiar cięcia</source>
         <translation>Cut size</translation>
@@ -583,7 +583,7 @@ Version 0.2</translation></message>
         <source>Siła</source>
         <translation>Force</translation>
     </message>
-    <message><source>Skala X</source><translation>Scale X</translation></message>
+    <message><source>Siła (FS)</source><translation>Force (FS)</translation></message><message><source>Skala X</source><translation>Scale X</translation></message>
     <message><source>Skala Y</source><translation>Scale Y</translation></message>
     <message><source>Skala plotera</source><translation>Plotter scale</translation></message><message>
         <source>Skala wyjścia</source>
@@ -598,13 +598,13 @@ Version 0.2</translation></message>
         <source>Sterowanie</source>
         <translation>Control</translation>
     </message>
-    <message><source>Sterownik</source><translation>Driver</translation></message><message><source>System</source><translation>System</translation></message>
+    <message><source>Sterowanie ręczne działa tylko dla portu szeregowego.</source><translation>Manual controls are available only for serial transport.</translation></message><message><source>Sterownik</source><translation>Driver</translation></message><message><source>System</source><translation>System</translation></message>
     <message><source>Szer.</source><translation>W</translation></message>
     <message>
         <source>Szerokość</source>
         <translation>Width</translation>
     </message>
-    <message><source>Tryb DMPL</source><translation>DMPL mode</translation></message><message>
+    <message><source>Timeout zapisu TCP.</source><translation>TCP write timeout.</translation></message><message><source>Tryb DMPL</source><translation>DMPL mode</translation></message><message>
         <source>Turdsize:</source>
         <translation>Turdsize:</translation>
     </message>
@@ -733,6 +733,10 @@ Version 0.2</translation></message>
         <translation>Custom force / speed (HPGL FS/VS)</translation>
     </message>
     <message>
+        <source>Własna siła / prędkość cięcia</source>
+        <translation>Custom cut force / speed</translation>
+    </message>
+    <message>
         <source>Własne</source>
         <translation>Custom</translation>
     </message>
@@ -763,7 +767,7 @@ Version 0.2</translation></message>
         <translation>Close gaps:</translation>
     </message>
     <message><source>Zapis DXF tymczasowego nie powiódł się.</source><translation>Failed to write temporary DXF.</translation></message>
-    <message><source>Zapis do pliku</source><translation>Save to file</translation></message>
+    <message><source>Zapis TCP nie powiódł się.</source><translation>TCP write failed.</translation></message><message><source>Zapis do pliku</source><translation>Save to file</translation></message>
     <message>
         <source>Zapis komendy sterowania nie powiódł się.</source>
         <translation>Failed to write control command.</translation>

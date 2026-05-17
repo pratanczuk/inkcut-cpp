@@ -51,7 +51,13 @@ NEW_TRANSLATIONS: dict[str, str] = {
     "Brak": "None",
     "Parzysta": "Even",
     "Nieparzysta": "Odd",
+    "Przed połączeniem": "Before connect",
+    "Przed połączeniem (np. reset\\n)": "Before connect (e.g. reset\\n)",
+    "Po połączeniu": "After connect",
+    "Po połączeniu (np. G21\\n)": "After connect (e.g. G21\\n)",
+    "Komendy": "Commands",
     "Przed zadaniem": "Before job",
+    "Przed cięciem": "Before cutting",
     "Po zadaniu": "After job",
     "Wbudowane komendy start/stop": "Built-in start/stop commands",
     "Tryb DMPL": "DMPL mode",
@@ -109,6 +115,13 @@ NEW_TRANSLATIONS: dict[str, str] = {
     "Filtry": "Filters",
     "(brak)": "(none)",
     "Port szeregowy": "Serial port",
+    "Sterowanie ręczne działa tylko dla portu szeregowego.": (
+        "Manual controls are available only for serial transport."
+    ),
+    "Nie można połączyć TCP %1:%2": "Cannot connect TCP %1:%2",
+    "Błąd zapisu na TCP.": "TCP write error.",
+    "Zapis TCP nie powiódł się.": "TCP write failed.",
+    "Timeout zapisu TCP.": "TCP write timeout.",
     "Zapis do pliku": "Save to file",
     "Drukarka (CUPS)": "Printer (CUPS)",
     "Drukarka CUPS": "CUPS printer",
@@ -137,6 +150,15 @@ NEW_TRANSLATIONS: dict[str, str] = {
     "Prawy": "Right",
     "Dolny": "Bottom",
     "Podaj po": "Feed after",
+    "Własna siła / prędkość cięcia": "Custom cut force / speed",
+    "Siła (FS)": "Force (FS)",
+    "Prędkość cięcia (VS). Typowo cm/s, zakres ~1–110 zależnie od plotera.": (
+        "Cutting speed (VS). Usually cm/s; range ~1–110 depends on plotter."
+    ),
+    "Posuw cięcia (G1). 0 = nie wysyłaj F — obowiązują $110/$111 w GRBL.": (
+        "Cutting feed (G1). 0 = don’t send F — GRBL’s $110/$111 apply."
+    ),
+    "Posuw przejazdów (G0). 0 = nie dodawaj F.": "Travel feed (G0). 0 = don’t append F.",
     # graphic tab
     "Brak wczytanego pliku.": "No file loaded.",
     "Rozmiar grafiki": "Graphic size",
@@ -241,8 +263,11 @@ NEW_TRANSLATIONS: dict[str, str] = {
     "send: wymagane --port oraz ścieżka pliku.": "send: --port and file path required.",
     "Podano więcej niż jeden plik JSON.": "More than one JSON file specified.",
     "Filtry kolorów dostępne tylko dla SVG.": "Color filters available for SVG only.",
-    "Po połączeniu (np. G21\\n)": "After connect (e.g. G21\\n)",
     "[control] połączono %1\n": "[control] connected %1\n",
+    "Brak danych — wyślij zadanie G-code, aby odczytać $$": (
+        "No data — send a G-code job to read $$"
+    ),
+    "Brak wybranych kluczy w odpowiedzi $$.": "No selected keys in $$ response.",
 }
 
 

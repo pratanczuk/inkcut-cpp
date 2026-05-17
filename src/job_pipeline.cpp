@@ -211,14 +211,27 @@ std::string buildPlotProgram(const QPainterPath& raw_path, const PlotJobSettings
     auto polylines = path_to_polylines(job_path, settings.flatten_step);
 
     std::string acc;
-    PlotStreamEncoder enc([&](std::string chunk) { acc += std::move(chunk); }, settings.protocol);
+    ProtocolSettings plot_proto = settings.protocol;
+    if (settings.material.use_custom_force_speed) {
+        if (plot_proto.protocol == PlotProtocol::GCode) {
+            plot_proto.gcode.feed_mm_min = settings.material.gcode_feed_cut_mm_min;
+            plot_proto.gcode.feed_rapid_mm_min = settings.material.gcode_feed_rapid_mm_min;
+        }
+    } else if (plot_proto.protocol == PlotProtocol::GCode) {
+        plot_proto.gcode.feed_mm_min = 0;
+        plot_proto.gcode.feed_rapid_mm_min = 0;
+    }
 
+    PlotStreamEncoder enc([&](std::string chunk) { acc += std::move(chunk); }, plot_proto);
+
+    enc.send_command_block(settings.device.before_connect_command);
     enc.connection_made();
     enc.send_command_block(settings.device.after_connect_command);
-    if (settings.material.use_custom_force_speed)
+    if (settings.material.use_custom_force_speed && plot_proto.protocol != PlotProtocol::GCode) {
         enc.set_force(settings.material.force);
-    if (settings.velocity >= 0)
-        enc.set_velocity(settings.velocity);
+        if (settings.material.speed > 0)
+            enc.set_velocity(settings.material.speed);
+    }
 
     enc.send_command_block(settings.device.before_job_command);
 

@@ -6,6 +6,7 @@
 #include <QByteArray>
 #include <QDateTime>
 #include <QMainWindow>
+#include <QMap>
 #include <QPointF>
 #include <QStringList>
 
@@ -58,6 +59,9 @@ public:
 
     void applyStartupSettings(const AppSettings& settings);
 
+protected:
+    void closeEvent(QCloseEvent* event) override;
+
 private slots:
     void onOpenSvg();
     void onImportBitmap();
@@ -87,6 +91,8 @@ private slots:
     void updateControlStatusLabel();
     bool sendControlMove(double x, double y, double z);
     bool sendControlRawCommand(const QString& command);
+    bool sendDeviceCommandBlock(const QString& commands);
+    void runDeviceConnectCommands();
 
     void refreshDevicePlugins();
     void onPluginComboChanged(int idx);
@@ -98,6 +104,7 @@ private slots:
     void onLiveClearPlot();
     void onSendProgress(qint64 sent, qint64 total);
     void onSendLivePosition(double x, double y);
+    void onGrblSettingsReady(const QMap<int, double>& settings);
     void onSendFinished(bool ok, const QString& err);
 
     void onLayoutChanged();
@@ -109,6 +116,7 @@ private slots:
     void addPassFilterListRow(QListWidget* list, const QString& storage_key, const QString& label,
                               bool enabled, int pass_count, int row_height);
     void updateGraphicSizeLabels();
+    void updateMaterialCutParamsVisibility();
 
 private:
     void rebuildPreview();
@@ -214,8 +222,12 @@ private:
     QCheckBox* lock_scale_chk_ = nullptr;
     QCheckBox* mat_roll_chk_ = nullptr;
     QCheckBox* mat_force_speed_chk_ = nullptr;
+    QWidget* mat_cutter_cut_params_ = nullptr;
     QSpinBox* mat_force_spin_ = nullptr;
     QSpinBox* mat_speed_spin_ = nullptr;
+    QWidget* mat_gcode_cut_params_ = nullptr;
+    QSpinBox* mat_gcode_feed_spin_ = nullptr;
+    QSpinBox* mat_gcode_feed_rapid_spin_ = nullptr;
     QPushButton* add_stack_btn_ = nullptr;
     QPushButton* remove_stack_btn_ = nullptr;
 
@@ -297,6 +309,8 @@ private:
     QGraphicsItemGroup* preview_graphic_group_ = nullptr;
     QDockWidget* bottom_dock_ = nullptr;
     QWidget* control_tab_ = nullptr;
+    QPlainTextEdit* grbl_diag_edit_ = nullptr;
+    QMap<int, double> grbl_settings_cache_ui_;
 };
 
 } // namespace inkcut

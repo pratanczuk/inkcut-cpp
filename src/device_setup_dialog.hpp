@@ -12,4 +12,7 @@ class DevicePluginLoader;
 /// Dialog konfiguracji urządzenia (odpowiednik Device → Setup w upstream).
 bool runDeviceSetupDialog(QWidget* parent, PlotJobSettings& job, DevicePluginLoader* plugins);
 
+/// Wczytuje zapisany profil urządzenia (device_profiles_v1) do ustawień zadania.
+void applyPersistedDeviceProfile(PlotJobSettings& job);
+
 } // namespace inkcut

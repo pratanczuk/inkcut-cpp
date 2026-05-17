@@ -18,6 +18,9 @@ target_link_libraries(inkcut_test_svg_path PRIVATE inkcut_core Qt6::Gui)
 add_executable(inkcut_test_protocol protocol_hpgl_smoke.cpp)
 target_link_libraries(inkcut_test_protocol PRIVATE inkcut_core Qt6::Core)
 
+add_executable(inkcut_test_grbl_comm grbl_comm_smoke.cpp)
+target_link_libraries(inkcut_test_grbl_comm PRIVATE inkcut_core Qt6::Core)
+
 add_test(NAME svg_loader_smoke COMMAND inkcut_test_svg)
 set_tests_properties(svg_loader_smoke PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
@@ -41,6 +44,13 @@ set_tests_properties(svg_path_parse PROPERTIES
 )
 
 add_test(NAME protocol_hpgl_smoke COMMAND inkcut_test_protocol)
+add_test(NAME grbl_comm_smoke COMMAND inkcut_test_grbl_comm)
+add_test(
+    NAME grbl_sim_integration
+    COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/run_grbl_sim_integration.sh"
+            "${CMAKE_CURRENT_SOURCE_DIR}/grbl_sim_integration.py"
+            "$<TARGET_FILE:inkcut-cpp>"
+)
 
 if(INKCUT_HAVE_POTRACE)
     add_executable(inkcut_test_bitmap bitmap_trace_smoke.cpp)

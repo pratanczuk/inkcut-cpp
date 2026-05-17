@@ -7,6 +7,8 @@
 #include <QFile>
 #include <QProcess>
 #include <QSerialPort>
+#include <QTcpSocket>
+#include <algorithm>
 
 #include "i18n.hpp"
 
@@ -99,8 +101,7 @@ TransportResult sendPlotPayload(const QByteArray& payload, const DeviceSetup& de
         }
         return r;
     }
-    case PlotTransportKind::SerialPort:
-    default: {
+    case PlotTransportKind::SerialPort: {
         QSerialPort serial;
         const SerialOpenOptions opt = serial_open_options_from_device(device);
         if (!open_serial(serial, opt)) {
@@ -116,6 +117,35 @@ TransportResult sendPlotPayload(const QByteArray& payload, const DeviceSetup& de
         r.ok = true;
         return r;
     }
+    case PlotTransportKind::TcpIp: {
+        QTcpSocket sock;
+        sock.connectToHost(device.tcp_host, quint16(std::max(1, device.tcp_port)));
+        if (!sock.waitForConnected(5000)) {
+            r.error_message = trInk("Nie można połączyć TCP %1:%2")
+                                  .arg(device.tcp_host)
+                                  .arg(device.tcp_port);
+            return r;
+        }
+        qint64 total = 0;
+        while (total < payload.size()) {
+            const qint64 n = sock.write(payload.constData() + total, payload.size() - total);
+            if (n <= 0) {
+                r.error_message = trInk("Zapis TCP nie powiódł się.");
+                return r;
+            }
+            total += n;
+            if (!sock.waitForBytesWritten(5000)) {
+                r.error_message = trInk("Timeout zapisu TCP.");
+                return r;
+            }
+        }
+        r.bytes_written = total;
+        r.ok = true;
+        return r;
+    }
+    default:
+        r.error_message = trInk("Nieobsługiwany typ transportu.");
+        return r;
     }
 }
 

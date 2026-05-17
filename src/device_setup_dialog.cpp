@@ -18,6 +18,7 @@
 #include <QDoubleSpinBox>
 #include <QFileDialog>
 #include <QFormLayout>
+#include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QJsonArray>
@@ -159,6 +160,13 @@ DeviceProfile profileFromJob(const PlotJobSettings& job)
     p.custom = job.device.custom;
     p.width = job.material.width;
     p.height = job.material.height;
+    p.velocity = job.material.speed > 0 ? job.material.speed : job.velocity;
+    p.gcode_feed_mm_min = job.material.gcode_feed_cut_mm_min > 0
+                              ? job.material.gcode_feed_cut_mm_min
+                              : job.protocol.gcode.feed_mm_min;
+    p.gcode_feed_rapid_mm_min = job.material.gcode_feed_rapid_mm_min > 0
+                                    ? job.material.gcode_feed_rapid_mm_min
+                                    : job.protocol.gcode.feed_rapid_mm_min;
     p.protocol = job.protocol.protocol;
     p.dmpl_mode = job.protocol.dmpl_mode;
     p.plot_scale = job.protocol.plot_scale;
@@ -199,6 +207,10 @@ void profileToJob(const DeviceProfile& p, PlotJobSettings& job)
     job.device.name = p.name;
     job.material.width = p.width;
     job.material.height = p.height;
+    job.material.speed = p.velocity;
+    job.material.gcode_feed_cut_mm_min = p.gcode_feed_mm_min;
+    job.material.gcode_feed_rapid_mm_min = p.gcode_feed_rapid_mm_min;
+    job.velocity = p.velocity;
     job.protocol.protocol = p.protocol;
     job.protocol.dmpl_mode = p.dmpl_mode;
     job.protocol.plot_scale = p.plot_scale;
@@ -256,9 +268,13 @@ QJsonObject profileToJson(const DeviceProfile& p)
     o.insert(QStringLiteral("name"), p.name);
     o.insert(QStringLiteral("custom"), p.custom);
     o.insert(QStringLiteral("preset_id"), p.device.preset_id);
+    o.insert(QStringLiteral("manufacturer"), p.device.manufacturer);
+    o.insert(QStringLiteral("model_name"), p.device.model_name);
     o.insert(QStringLiteral("transport"), int(p.device.transport));
     o.insert(QStringLiteral("port"), p.device.port_name);
     o.insert(QStringLiteral("baud"), int(p.device.baud_rate));
+    o.insert(QStringLiteral("tcp_host"), p.device.tcp_host);
+    o.insert(QStringLiteral("tcp_port"), p.device.tcp_port);
     o.insert(QStringLiteral("data_bits"), p.device.data_bits);
     o.insert(QStringLiteral("parity"), p.device.parity);
     o.insert(QStringLiteral("stop_bits"), p.device.stop_bits);
@@ -299,6 +315,7 @@ QJsonObject profileToJson(const DeviceProfile& p)
     o.insert(QStringLiteral("gcode_lift_gcode"), p.gcode_lift_gcode);
     o.insert(QStringLiteral("gcode_lower_gcode"), p.gcode_lower_gcode);
     o.insert(QStringLiteral("plugin_id"), p.plugin_id);
+    o.insert(QStringLiteral("before_connect"), p.device.before_connect_command);
     o.insert(QStringLiteral("after_connect"), p.device.after_connect_command);
     o.insert(QStringLiteral("before_job"), p.device.before_job_command);
     o.insert(QStringLiteral("after_job"), p.device.after_job_command);
@@ -321,10 +338,14 @@ DeviceProfile profileFromJson(const QJsonObject& o)
     p.name = o.value(QStringLiteral("name")).toString(trInk("Nowe urządzenie"));
     p.custom = o.value(QStringLiteral("custom")).toBool();
     p.device.preset_id = o.value(QStringLiteral("preset_id")).toString();
+    p.device.manufacturer = o.value(QStringLiteral("manufacturer")).toString();
+    p.device.model_name = o.value(QStringLiteral("model_name")).toString();
     p.device.transport =
         static_cast<PlotTransportKind>(o.value(QStringLiteral("transport")).toInt());
     p.device.port_name = o.value(QStringLiteral("port")).toString();
     p.device.baud_rate = o.value(QStringLiteral("baud")).toInt(115200);
+    p.device.tcp_host = o.value(QStringLiteral("tcp_host")).toString(p.device.tcp_host);
+    p.device.tcp_port = o.value(QStringLiteral("tcp_port")).toInt(p.device.tcp_port);
     p.device.data_bits = o.value(QStringLiteral("data_bits")).toInt(8);
     p.device.parity = o.value(QStringLiteral("parity")).toInt(0);
     p.device.stop_bits = o.value(QStringLiteral("stop_bits")).toInt(1);
@@ -368,6 +389,7 @@ DeviceProfile profileFromJson(const QJsonObject& o)
     p.gcode_lift_gcode = o.value(QStringLiteral("gcode_lift_gcode")).toString();
     p.gcode_lower_gcode = o.value(QStringLiteral("gcode_lower_gcode")).toString();
     p.plugin_id = o.value(QStringLiteral("plugin_id")).toString();
+    p.device.before_connect_command = o.value(QStringLiteral("before_connect")).toString();
     p.device.after_connect_command = o.value(QStringLiteral("after_connect")).toString();
     p.device.before_job_command = o.value(QStringLiteral("before_job")).toString();
     p.device.after_job_command = o.value(QStringLiteral("after_job")).toString();
@@ -384,10 +406,14 @@ DeviceProfile profileFromJson(const QJsonObject& o)
         p.min_line.min_edge = min_line.value(QStringLiteral("min_edge")).toDouble();
         p.min_line.min_shift = min_line.value(QStringLiteral("min_shift")).toDouble();
     }
-    DevicePreset preset;
-    if (devicePresetById(p.device.preset_id, preset)) {
-        p.device.manufacturer = preset.manufacturer;
-        p.device.model_name = preset.model;
+    if (p.device.manufacturer.isEmpty() || p.device.model_name.isEmpty()) {
+        DevicePreset preset;
+        if (devicePresetById(p.device.preset_id, preset)) {
+            if (p.device.manufacturer.isEmpty())
+                p.device.manufacturer = preset.manufacturer;
+            if (p.device.model_name.isEmpty())
+                p.device.model_name = preset.model;
+        }
     }
     return p;
 }
@@ -407,7 +433,7 @@ QVector<DeviceProfile> loadDeviceProfiles(const PlotJobSettings& fallback)
     return out;
 }
 
-void saveDeviceProfiles(const QVector<DeviceProfile>& profiles)
+void saveDeviceProfiles(const QVector<DeviceProfile>& profiles, int active_index)
 {
     QJsonArray arr;
     for (const DeviceProfile& p : profiles)
@@ -415,6 +441,30 @@ void saveDeviceProfiles(const QVector<DeviceProfile>& profiles)
     QSettings settings(QStringLiteral("inkcut"), QStringLiteral("gui"));
     settings.setValue(QStringLiteral("device_profiles_v1"),
                       QString::fromUtf8(QJsonDocument(arr).toJson(QJsonDocument::Compact)));
+    settings.setValue(QStringLiteral("active_device_profile_index"), active_index);
+    settings.sync();
+}
+
+int loadActiveDeviceProfileIndex()
+{
+    QSettings settings(QStringLiteral("inkcut"), QStringLiteral("gui"));
+    return settings.value(QStringLiteral("active_device_profile_index"), 0).toInt();
+}
+
+int findProfileIndex(const QVector<DeviceProfile>& profiles, const PlotJobSettings& job)
+{
+    const int saved = loadActiveDeviceProfileIndex();
+    if (saved >= 0 && saved < profiles.size())
+        return saved;
+    for (int i = 0; i < profiles.size(); ++i) {
+        if (!job.device.name.isEmpty() && profiles[i].name == job.device.name)
+            return i;
+    }
+    for (int i = 0; i < profiles.size(); ++i) {
+        if (profiles[i].device.preset_id == job.device.preset_id)
+            return i;
+    }
+    return 0;
 }
 
 class DeviceSetupDialog final {
@@ -424,14 +474,7 @@ public:
         , plugins_(plugins)
     {
         profiles_ = loadDeviceProfiles(job);
-        current_ = 0;
-        for (int i = 0; i < profiles_.size(); ++i) {
-            if (profiles_[i].device.preset_id == job.device.preset_id) {
-                current_ = i;
-                break;
-            }
-        }
-        profiles_[current_] = profileFromJob(job);
+        current_ = findProfileIndex(profiles_, job);
 
         dlg_ = new QDialog(parent);
         dlg_->setWindowTitle(trInk("Konfiguracja urządzenia — Inkcut"));
@@ -539,6 +582,40 @@ private:
         dform->addRow(mirror_x_chk_);
         dform->addRow(mirror_y_chk_);
         dform->addRow(trInk("Skala wyjścia"), scale_spin_);
+
+        auto* commands_group = new QGroupBox(trInk("Komendy"), device_tab);
+        auto* commands_grid = new QGridLayout(commands_group);
+        commands_grid->setContentsMargins(8, 8, 8, 8);
+        commands_grid->setHorizontalSpacing(12);
+        commands_grid->setVerticalSpacing(10);
+        const int cmd_edit_h = ui_profile_ == UiProfile::Tablet ? 88 : 72;
+        auto makeCmdPanel = [&](const QString& label, QPlainTextEdit*& edit,
+                                const QString& placeholder, int row, int col) {
+            auto* panel = new QWidget(commands_group);
+            panel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+            auto* pv = new QVBoxLayout(panel);
+            pv->setContentsMargins(0, 0, 0, 0);
+            pv->setSpacing(4);
+            auto* lbl = new QLabel(label, panel);
+            lbl->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+            pv->addWidget(lbl);
+            edit = new QPlainTextEdit(panel);
+            edit->setMinimumHeight(cmd_edit_h);
+            edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+            edit->setPlaceholderText(placeholder);
+            pv->addWidget(edit, 1);
+            commands_grid->addWidget(panel, row, col);
+        };
+        makeCmdPanel(trInk("Przed połączeniem"), before_connect_edit_,
+                     trInk("Przed połączeniem (np. reset\\n)"), 0, 0);
+        makeCmdPanel(trInk("Po połączeniu"), after_connect_edit_,
+                     trInk("Po połączeniu (np. G21\\n)"), 0, 1);
+        makeCmdPanel(trInk("Przed zadaniem"), before_job_edit_, trInk("Przed cięciem"), 1, 0);
+        makeCmdPanel(trInk("Po zadaniu"), after_job_edit_, trInk("Po zadaniu"), 1, 1);
+        commands_grid->setColumnStretch(0, 1);
+        commands_grid->setColumnStretch(1, 1);
+        dform->addRow(commands_group);
+
         tabs_->addTab(wrapTabInScroll(device_tab), trInk("Urządzenie"));
 
         // --- Połączenie ---
@@ -547,6 +624,7 @@ private:
         styleFormLayout(conn_form_, ui_profile_);
         transport_combo_ = new QComboBox(conn);
         transport_combo_->addItem(trInk("Port szeregowy"), int(PlotTransportKind::SerialPort));
+        transport_combo_->addItem(QStringLiteral("TCP/IP"), int(PlotTransportKind::TcpIp));
         transport_combo_->addItem(trInk("Zapis do pliku"), int(PlotTransportKind::FileOutput));
 
         port_row_widget_ = new QWidget(conn);
@@ -618,38 +696,24 @@ private:
         out_row->addWidget(output_edit_, 1);
         out_row->addWidget(browse_btn_);
 
+        tcp_row_widget_ = new QWidget(conn);
+        auto* tcp_row = new QHBoxLayout(tcp_row_widget_);
+        tcp_row->setContentsMargins(0, 0, 0, 0);
+        tcp_host_edit_ = new QLineEdit(tcp_row_widget_);
+        tcp_host_edit_->setPlaceholderText(QStringLiteral("127.0.0.1"));
+        tcp_port_spin_ = new QSpinBox(tcp_row_widget_);
+        tcp_port_spin_->setRange(1, 65535);
+        tcp_port_spin_->setValue(23);
+        tcp_row->addWidget(tcp_host_edit_, 1);
+        tcp_row->addWidget(new QLabel(QStringLiteral(":"), tcp_row_widget_));
+        tcp_row->addWidget(tcp_port_spin_);
+
         conn_form_->addRow(trInk("Typ"), transport_combo_);
         conn_form_->addRow(trInk("Port"), port_row_widget_);
         conn_form_->addRow(QString(), serial_params_row_widget_);
+        conn_form_->addRow(QStringLiteral("TCP"), tcp_row_widget_);
         conn_form_->addRow(trInk("Kontrola przepływu"), flow_widget_);
         conn_form_->addRow(trInk("Plik wyjściowy"), output_row_widget_);
-        auto* commands_widget = new QWidget(conn);
-        commands_widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-        auto* commands_row = new QHBoxLayout(commands_widget);
-        commands_row->setContentsMargins(0, 0, 0, 0);
-        commands_row->setSpacing(12);
-        const int cmd_edit_h = ui_profile_ == UiProfile::Tablet ? 72 : 56;
-        auto makeCmdColumn = [&](const QString& label, QPlainTextEdit*& edit,
-                                 const QString& placeholder) {
-            auto* col = new QWidget(commands_widget);
-            col->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-            auto* cv = new QVBoxLayout(col);
-            cv->setContentsMargins(0, 0, 0, 0);
-            cv->setSpacing(2);
-            auto* lbl = new QLabel(label, col);
-            lbl->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-            cv->addWidget(lbl);
-            edit = new QPlainTextEdit(col);
-            edit->setFixedHeight(cmd_edit_h);
-            edit->setPlaceholderText(placeholder);
-            cv->addWidget(edit);
-            commands_row->addWidget(col, 1);
-        };
-        makeCmdColumn(trInk("Po połączeniu"), after_connect_edit_,
-                      trInk("Po połączeniu (np. G21\\n)"));
-        makeCmdColumn(trInk("Przed zadaniem"), before_job_edit_, trInk("Przed cięciem"));
-        makeCmdColumn(trInk("Po zadaniu"), after_job_edit_, trInk("Po zadaniu"));
-        conn_form_->addRow(commands_widget);
         tabs_->addTab(wrapTabInScroll(conn), trInk("Połączenie"));
 
         // --- Protokół ---
@@ -667,14 +731,6 @@ private:
         plot_scale_spin_ = new QDoubleSpinBox(proto);
         plot_scale_spin_->setRange(0.001, 100000);
         plot_scale_spin_->setDecimals(4);
-        velocity_spin_ = new QSpinBox(proto);
-        velocity_spin_->setRange(1, 99999);
-        velocity_spin_->setSuffix(QStringLiteral(" cm/s"));
-        const QString vel_tip = trInk(
-            "Prędkość ruchu narzędzia. Dla HPGL/DMPL/GPGL/CAMM Inkcut wysyła "
-            "komendę VS<n>; (typowo cm/s, zakres ~1–110 zależnie od plotera). "
-            "Dla G-code parametr jest ignorowany — użyj pola Feed lub $110/$111 w GRBL.");
-        velocity_spin_->setToolTip(vel_tip);
         hpgl_pad_chk_ = new QCheckBox(trInk("Dopełnianie linii (HPGL pad)"), proto);
         gcode_builtin_chk_ = new QCheckBox(trInk("Wbudowane komendy start/stop"), proto);
         gcode_lift_combo_ = new QComboBox(proto);
@@ -701,8 +757,6 @@ private:
         }
         dmpl_row_label_ = new QLabel(trInk("Tryb DMPL"), proto);
         plot_scale_row_label_ = new QLabel(trInk("Skala plotera"), proto);
-        velocity_row_label_ = new QLabel(trInk("Prędkość (cm/s)"), proto);
-        velocity_row_label_->setToolTip(vel_tip);
         hpgl_pad_row_widget_ = hpgl_pad_chk_;
         gcode_group_ = new QGroupBox(trInk("G-code / GRBL"), proto);
         auto* gcode_form = new QFormLayout(gcode_group_);
@@ -738,34 +792,9 @@ private:
         gcode_form->addRow(pwm_down_label_, pwm_down_spin_);
         gcode_form->addRow(pwm_max_label_, pwm_max_spin_);
 
-        feed_spin_ = new QSpinBox(gcode_group_);
-        feed_spin_->setRange(0, 100000);
-        feed_spin_->setSuffix(QStringLiteral(" mm/min"));
-        const QString feed_tip = trInk(
-            "Posuw cięcia. Dodawany do każdego G1 jako F<n>. "
-            "0 = nie wysyłaj — wtedy obowiązują $110/$111 w GRBL lub wcześniej "
-            "ustawione F. Typowo 600–1500 mm/min dla cięcia folii.");
-        feed_spin_->setToolTip(feed_tip);
-        feed_label_ = new QLabel(trInk("Feed cięcia (G1)"), gcode_group_);
-        feed_label_->setToolTip(feed_tip);
-
-        feed_rapid_spin_ = new QSpinBox(gcode_group_);
-        feed_rapid_spin_->setRange(0, 100000);
-        feed_rapid_spin_->setSuffix(QStringLiteral(" mm/min"));
-        const QString feed_rapid_tip = trInk(
-            "Posuw przejazdów (G0). 0 = nie dodawaj F — GRBL używa wtedy "
-            "$110/$111. Zwykle G0 i tak ignoruje F w GRBL.");
-        feed_rapid_spin_->setToolTip(feed_rapid_tip);
-        feed_rapid_label_ = new QLabel(trInk("Feed przejazdu (G0)"), gcode_group_);
-        feed_rapid_label_->setToolTip(feed_rapid_tip);
-
-        gcode_form->addRow(feed_label_, feed_spin_);
-        gcode_form->addRow(feed_rapid_label_, feed_rapid_spin_);
-
         pform->addRow(trInk("Język"), protocol_combo_);
         pform->addRow(dmpl_row_label_, dmpl_spin_);
         pform->addRow(plot_scale_row_label_, plot_scale_spin_);
-        pform->addRow(velocity_row_label_, velocity_spin_);
         pform->addRow(hpgl_pad_row_widget_);
         pform->addRow(gcode_group_);
         tabs_->addTab(wrapTabInScroll(proto), trInk("Protokół"));
@@ -909,7 +938,7 @@ private:
                          [this]() { updateProtocolTabVisibility(); });
         QObject::connect(buttons_, &QDialogButtonBox::accepted, dlg_, [this]() {
             saveUiToProfile(current_);
-            saveDeviceProfiles(profiles_);
+            saveDeviceProfiles(profiles_, current_);
             profileToJob(profiles_[current_], job_);
             dlg_->accept();
         });
@@ -942,6 +971,8 @@ private:
         refreshSerialPorts();
         setSerialPortInCombo(p.device.port_name);
         baud_spin_->setValue(p.device.baud_rate);
+        tcp_host_edit_->setText(p.device.tcp_host);
+        tcp_port_spin_->setValue(p.device.tcp_port > 0 ? p.device.tcp_port : 23);
         const int bs = bytesize_combo_->findData(p.device.data_bits);
         if (bs >= 0)
             bytesize_combo_->setCurrentIndex(bs);
@@ -958,7 +989,6 @@ private:
         protocol_combo_->setCurrentIndex(protocol_combo_->findData(int(p.protocol)));
         dmpl_spin_->setValue(p.dmpl_mode);
         plot_scale_spin_->setValue(p.plot_scale);
-        velocity_spin_->setValue(p.velocity);
         hpgl_pad_chk_->setChecked(p.hpgl_pad);
         gcode_builtin_chk_->setChecked(p.gcode_builtin);
         gcode_dialect_combo_->setCurrentIndex(
@@ -970,8 +1000,6 @@ private:
         pwm_up_spin_->setValue(p.gcode_pwm_up);
         pwm_down_spin_->setValue(p.gcode_pwm_down);
         pwm_max_spin_->setValue(p.gcode_pwm_max);
-        feed_spin_->setValue(p.gcode_feed_mm_min);
-        feed_rapid_spin_->setValue(p.gcode_feed_rapid_mm_min);
         blade_offset_spin_->setValue(p.blade.offset);
         blade_cutoff_spin_->setValue(p.blade.cutoff_deg);
         blade_quality_spin_->setValue(p.blade.quality_factor);
@@ -979,6 +1007,7 @@ private:
         closed_poly_eps_spin_->setValue(p.closed_poly_eps);
         gcode_lift_edit_->setPlainText(p.gcode_lift_gcode);
         gcode_lower_edit_->setPlainText(p.gcode_lower_gcode);
+        before_connect_edit_->setPlainText(p.device.before_connect_command);
         after_connect_edit_->setPlainText(p.device.after_connect_command);
         before_job_edit_->setPlainText(p.device.before_job_command);
         after_job_edit_->setPlainText(p.device.after_job_command);
@@ -1019,6 +1048,8 @@ private:
         if (p.device.port_name.isEmpty())
             p.device.port_name = port_combo_->currentText().trimmed();
         p.device.baud_rate = baud_spin_->value();
+        p.device.tcp_host = tcp_host_edit_->text().trimmed();
+        p.device.tcp_port = tcp_port_spin_->value();
         p.device.data_bits = bytesize_combo_->currentData().toInt();
         p.device.parity = parity_combo_->currentData().toInt();
         p.device.stop_bits = stopbits_combo_->currentData().toInt();
@@ -1029,7 +1060,6 @@ private:
         p.protocol = static_cast<PlotProtocol>(protocol_combo_->currentData().toInt());
         p.dmpl_mode = dmpl_spin_->value();
         p.plot_scale = plot_scale_spin_->value();
-        p.velocity = velocity_spin_->value();
         p.hpgl_pad = hpgl_pad_chk_->isChecked();
         p.gcode_builtin = gcode_builtin_chk_->isChecked();
         p.gcode_dialect = static_cast<GCodeProtocolSettings::Dialect>(
@@ -1042,8 +1072,9 @@ private:
         p.gcode_pwm_up = pwm_up_spin_->value();
         p.gcode_pwm_down = pwm_down_spin_->value();
         p.gcode_pwm_max = pwm_max_spin_->value();
-        p.gcode_feed_mm_min = feed_spin_->value();
-        p.gcode_feed_rapid_mm_min = feed_rapid_spin_->value();
+        p.velocity = job_.material.speed > 0 ? job_.material.speed : job_.velocity;
+        p.gcode_feed_mm_min = job_.material.gcode_feed_cut_mm_min;
+        p.gcode_feed_rapid_mm_min = job_.material.gcode_feed_rapid_mm_min;
         p.blade.offset = blade_offset_spin_->value();
         p.blade.cutoff_deg = blade_cutoff_spin_->value();
         p.blade.quality_factor = blade_quality_spin_->value();
@@ -1051,6 +1082,7 @@ private:
         p.closed_poly_eps = closed_poly_eps_spin_->value();
         p.gcode_lift_gcode = gcode_lift_edit_->toPlainText();
         p.gcode_lower_gcode = gcode_lower_edit_->toPlainText();
+        p.device.before_connect_command = before_connect_edit_->toPlainText();
         p.device.after_connect_command = after_connect_edit_->toPlainText();
         p.device.before_job_command = before_job_edit_->toPlainText();
         p.device.after_job_command = after_job_edit_->toPlainText();
@@ -1138,14 +1170,6 @@ private:
             pwm_down_label_->setVisible(solenoid);
         if (pwm_max_label_)
             pwm_max_label_->setVisible(solenoid);
-        if (feed_spin_)
-            feed_spin_->setVisible(is_gcode);
-        if (feed_rapid_spin_)
-            feed_rapid_spin_->setVisible(is_gcode);
-        if (feed_label_)
-            feed_label_->setVisible(is_gcode);
-        if (feed_rapid_label_)
-            feed_rapid_label_->setVisible(is_gcode);
     }
 
     void updateTransportVisibility()
@@ -1153,9 +1177,11 @@ private:
         const auto kind =
             static_cast<PlotTransportKind>(transport_combo_->currentData().toInt());
         const bool serial = kind == PlotTransportKind::SerialPort;
+        const bool tcp = kind == PlotTransportKind::TcpIp;
         const bool file_out = kind == PlotTransportKind::FileOutput;
         setFormRowVisible(conn_form_, port_row_widget_, serial);
         setFormRowVisible(conn_form_, serial_params_row_widget_, serial);
+        setFormRowVisible(conn_form_, tcp_row_widget_, tcp);
         setFormRowVisible(conn_form_, flow_widget_, serial);
         setFormRowVisible(conn_form_, output_row_widget_, file_out);
     }
@@ -1283,15 +1309,16 @@ private:
     QLineEdit* output_edit_ = nullptr;
     QWidget* output_row_widget_ = nullptr;
     QPushButton* browse_btn_ = nullptr;
+    QWidget* tcp_row_widget_ = nullptr;
+    QLineEdit* tcp_host_edit_ = nullptr;
+    QSpinBox* tcp_port_spin_ = nullptr;
 
     QComboBox* protocol_combo_ = nullptr;
     QSpinBox* dmpl_spin_ = nullptr;
     QDoubleSpinBox* plot_scale_spin_ = nullptr;
-    QSpinBox* velocity_spin_ = nullptr;
     QCheckBox* hpgl_pad_chk_ = nullptr;
     QLabel* dmpl_row_label_ = nullptr;
     QLabel* plot_scale_row_label_ = nullptr;
-    QLabel* velocity_row_label_ = nullptr;
     QWidget* hpgl_pad_row_widget_ = nullptr;
     QGroupBox* gcode_group_ = nullptr;
     QCheckBox* gcode_builtin_chk_ = nullptr;
@@ -1308,10 +1335,6 @@ private:
     QLabel* pwm_up_label_ = nullptr;
     QLabel* pwm_down_label_ = nullptr;
     QLabel* pwm_max_label_ = nullptr;
-    QSpinBox* feed_spin_ = nullptr;
-    QSpinBox* feed_rapid_spin_ = nullptr;
-    QLabel* feed_label_ = nullptr;
-    QLabel* feed_rapid_label_ = nullptr;
     QLabel* gcode_lift_edit_label_ = nullptr;
     QLabel* gcode_lower_edit_label_ = nullptr;
 
@@ -1328,6 +1351,7 @@ private:
     QDoubleSpinBox* closed_poly_eps_spin_ = nullptr;
     QPlainTextEdit* gcode_lift_edit_ = nullptr;
     QPlainTextEdit* gcode_lower_edit_ = nullptr;
+    QPlainTextEdit* before_connect_edit_ = nullptr;
     QPlainTextEdit* after_connect_edit_ = nullptr;
     QPlainTextEdit* before_job_edit_ = nullptr;
     QPlainTextEdit* after_job_edit_ = nullptr;
@@ -1336,6 +1360,15 @@ private:
 };
 
 } // namespace
+
+void applyPersistedDeviceProfile(PlotJobSettings& job)
+{
+    const QVector<DeviceProfile> profiles = loadDeviceProfiles(job);
+    if (profiles.isEmpty())
+        return;
+    const int idx = qBound(0, findProfileIndex(profiles, job), profiles.size() - 1);
+    profileToJob(profiles[idx], job);
+}
 
 bool runDeviceSetupDialog(QWidget* parent, PlotJobSettings& job, DevicePluginLoader* plugins)
 {

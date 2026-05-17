@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(inkcut-cpp VERSION 0.3.0 LANGUAGES CXX)
+project(inkcut-cpp VERSION 0.3.2 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -13,7 +13,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 include(CTest)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Xml SerialPort Widgets LinguistTools)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Xml SerialPort Widgets LinguistTools Network)
 
 option(INKCUT_BUILD_PLUGINS "Build optional device plugin modules (.so)" ON)
 
@@ -33,6 +33,7 @@ set(INKCUT_CORE_SOURCES
     src/bitmap_trace.cpp
     src/dxf_to_svg.cpp
     src/protocols.cpp
+    src/grbl_comm.cpp
     src/filters.cpp
     src/ordering.cpp
     src/job_pipeline.cpp
@@ -91,7 +92,7 @@ qt_add_executable(inkcut-gui
     src/plot_transport.cpp
     src/serial_sender.cpp
 )
-target_link_libraries(inkcut-gui PRIVATE inkcut_core Qt6::Widgets Qt6::SerialPort)
+target_link_libraries(inkcut-gui PRIVATE inkcut_core Qt6::Widgets Qt6::SerialPort Qt6::Network)
 
 set(INKCUT_TS_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/translations/inkcut_en.ts"

@@ -1,4 +1,4 @@
-inkcut-cpp (0.3.0-1) UNRELEASED; urgency=medium
+inkcut-cpp (0.3.2-1) UNRELEASED; urgency=medium
 
   * Device setup: redesigned Connection tab with full serial parameters
     (data bits, parity, stop bits, hardware/software flow control) and

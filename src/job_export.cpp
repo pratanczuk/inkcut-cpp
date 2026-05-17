@@ -97,7 +97,7 @@ QJsonObject plotJobSettingsToJson(const PlotJobSettings& s)
     o.insert(QStringLiteral("order"), orderStrategyToCli(s.order));
     o.insert(QStringLiteral("protocol_block"), protocolSettingsToJson(s.protocol));
     o.insert(QStringLiteral("flatten_step"), s.flatten_step);
-    o.insert(QStringLiteral("velocity"), s.velocity);
+    o.insert(QStringLiteral("velocity"), s.material.speed > 0 ? s.material.speed : s.velocity);
     o.insert(QStringLiteral("repeat_steps"), s.repeat.steps);
     o.insert(QStringLiteral("repeat_gap"), s.repeat.closed_loop_distance);
     o.insert(QStringLiteral("min_jump"), s.min_line.min_jump);
@@ -122,6 +122,8 @@ QJsonObject plotJobSettingsToJson(const PlotJobSettings& s)
     mat.insert(QStringLiteral("use_custom_force_speed"), s.material.use_custom_force_speed);
     mat.insert(QStringLiteral("force"), s.material.force);
     mat.insert(QStringLiteral("speed"), s.material.speed);
+    mat.insert(QStringLiteral("gcode_feed_cut_mm_min"), s.material.gcode_feed_cut_mm_min);
+    mat.insert(QStringLiteral("gcode_feed_rapid_mm_min"), s.material.gcode_feed_rapid_mm_min);
     o.insert(QStringLiteral("material"), mat);
     o.insert(QStringLiteral("plugin_id"), s.plugin_id);
 
@@ -185,10 +187,16 @@ QJsonObject plotJobSettingsToJson(const PlotJobSettings& s)
     o.insert(QStringLiteral("color_filters"), color_arr);
 
     QJsonObject dev;
+    dev.insert(QStringLiteral("name"), s.device.name);
+    dev.insert(QStringLiteral("custom"), s.device.custom);
     dev.insert(QStringLiteral("preset_id"), s.device.preset_id);
+    dev.insert(QStringLiteral("manufacturer"), s.device.manufacturer);
+    dev.insert(QStringLiteral("model_name"), s.device.model_name);
     dev.insert(QStringLiteral("transport"), int(s.device.transport));
     dev.insert(QStringLiteral("port"), s.device.port_name);
     dev.insert(QStringLiteral("baud"), int(s.device.baud_rate));
+    dev.insert(QStringLiteral("tcp_host"), s.device.tcp_host);
+    dev.insert(QStringLiteral("tcp_port"), s.device.tcp_port);
     dev.insert(QStringLiteral("data_bits"), s.device.data_bits);
     dev.insert(QStringLiteral("parity"), s.device.parity);
     dev.insert(QStringLiteral("stop_bits"), s.device.stop_bits);
@@ -201,6 +209,7 @@ QJsonObject plotJobSettingsToJson(const PlotJobSettings& s)
     dev.insert(QStringLiteral("mirror_x"), s.device.mirror_x);
     dev.insert(QStringLiteral("mirror_y"), s.device.mirror_y);
     dev.insert(QStringLiteral("device_scale"), s.device.device_scale);
+    dev.insert(QStringLiteral("before_connect"), s.device.before_connect_command);
     dev.insert(QStringLiteral("after_connect"), s.device.after_connect_command);
     dev.insert(QStringLiteral("before_job"), s.device.before_job_command);
     dev.insert(QStringLiteral("after_job"), s.device.after_job_command);
@@ -272,6 +281,12 @@ bool plotJobSettingsFromJson(const QJsonObject& o, PlotJobSettings& s, QString* 
             s.material.force = mat.value(QStringLiteral("force")).toInt();
         if (mat.contains(QStringLiteral("speed")))
             s.material.speed = mat.value(QStringLiteral("speed")).toInt();
+        if (mat.contains(QStringLiteral("gcode_feed_cut_mm_min")))
+            s.material.gcode_feed_cut_mm_min =
+                mat.value(QStringLiteral("gcode_feed_cut_mm_min")).toInt();
+        if (mat.contains(QStringLiteral("gcode_feed_rapid_mm_min")))
+            s.material.gcode_feed_rapid_mm_min =
+                mat.value(QStringLiteral("gcode_feed_rapid_mm_min")).toInt();
     }
 
     if (o.contains(QStringLiteral("plugin_id")))
@@ -351,11 +366,23 @@ bool plotJobSettingsFromJson(const QJsonObject& o, PlotJobSettings& s, QString* 
 
     const QJsonObject dev = o.value(QStringLiteral("device")).toObject();
     if (!dev.isEmpty()) {
+        if (dev.contains(QStringLiteral("name")))
+            s.device.name = dev.value(QStringLiteral("name")).toString();
+        if (dev.contains(QStringLiteral("custom")))
+            s.device.custom = dev.value(QStringLiteral("custom")).toBool();
         s.device.preset_id = dev.value(QStringLiteral("preset_id")).toString();
+        if (dev.contains(QStringLiteral("manufacturer")))
+            s.device.manufacturer = dev.value(QStringLiteral("manufacturer")).toString();
+        if (dev.contains(QStringLiteral("model_name")))
+            s.device.model_name = dev.value(QStringLiteral("model_name")).toString();
         s.device.transport =
             static_cast<PlotTransportKind>(dev.value(QStringLiteral("transport")).toInt());
         s.device.port_name = dev.value(QStringLiteral("port")).toString(s.device.port_name);
         s.device.baud_rate = dev.value(QStringLiteral("baud")).toInt(s.device.baud_rate);
+        if (dev.contains(QStringLiteral("tcp_host")))
+            s.device.tcp_host = dev.value(QStringLiteral("tcp_host")).toString(s.device.tcp_host);
+        if (dev.contains(QStringLiteral("tcp_port")))
+            s.device.tcp_port = dev.value(QStringLiteral("tcp_port")).toInt(s.device.tcp_port);
         if (dev.contains(QStringLiteral("data_bits")))
             s.device.data_bits = dev.value(QStringLiteral("data_bits")).toInt(s.device.data_bits);
         if (dev.contains(QStringLiteral("parity")))
@@ -374,6 +401,8 @@ bool plotJobSettingsFromJson(const QJsonObject& o, PlotJobSettings& s, QString* 
         s.device.mirror_x = dev.value(QStringLiteral("mirror_x")).toBool();
         s.device.mirror_y = dev.value(QStringLiteral("mirror_y")).toBool();
         s.device.device_scale = dev.value(QStringLiteral("device_scale")).toDouble(1.0);
+        if (dev.contains(QStringLiteral("before_connect")))
+            s.device.before_connect_command = dev.value(QStringLiteral("before_connect")).toString();
         if (dev.contains(QStringLiteral("after_connect")))
             s.device.after_connect_command = dev.value(QStringLiteral("after_connect")).toString();
         if (dev.contains(QStringLiteral("before_job")))
@@ -381,6 +410,14 @@ bool plotJobSettingsFromJson(const QJsonObject& o, PlotJobSettings& s, QString* 
         if (dev.contains(QStringLiteral("after_job")))
             s.device.after_job_command = dev.value(QStringLiteral("after_job")).toString();
     }
+
+    if (s.material.speed <= 0 && s.velocity > 0)
+        s.material.speed = s.velocity;
+    if (s.material.gcode_feed_cut_mm_min <= 0 && s.protocol.gcode.feed_mm_min > 0)
+        s.material.gcode_feed_cut_mm_min = s.protocol.gcode.feed_mm_min;
+    if (s.material.gcode_feed_rapid_mm_min <= 0 && s.protocol.gcode.feed_rapid_mm_min > 0)
+        s.material.gcode_feed_rapid_mm_min = s.protocol.gcode.feed_rapid_mm_min;
+    s.velocity = s.material.speed;
 
     return true;
 }

@@ -5,6 +5,8 @@
 #include "dxf_document.hpp"
 #include "device_presets.hpp"
 #include "device_setup_dialog.hpp"
+
+#include <QCloseEvent>
 #include "filters.hpp"
 #include "job_export.hpp"
 #include "bitmap_trace.hpp"
@@ -318,28 +320,52 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     mat_roll_chk_ = new QCheckBox(trInk("Materiał na rolce"), material_tab);
     lv->addWidget(mat_roll_chk_);
     mat_force_speed_chk_ =
-        new QCheckBox(trInk("Własna siła / prędkość (HPGL FS/VS)"), material_tab);
-    auto* force_row = new QHBoxLayout();
-    mat_force_spin_ = new QSpinBox(material_tab);
+        new QCheckBox(trInk("Własna siła / prędkość cięcia"), material_tab);
+    lv->addWidget(mat_force_speed_chk_);
+
+    mat_cutter_cut_params_ = new QWidget(material_tab);
+    auto* cutter_form = new QFormLayout(mat_cutter_cut_params_);
+    mat_force_spin_ = new QSpinBox(mat_cutter_cut_params_);
     mat_force_spin_->setRange(1, 999);
     mat_force_spin_->setValue(10);
-    mat_speed_spin_ = new QSpinBox(material_tab);
+    mat_speed_spin_ = new QSpinBox(mat_cutter_cut_params_);
     mat_speed_spin_->setRange(1, 99999);
-    mat_speed_spin_->setValue(10);
-    force_row->addWidget(new QLabel(trInk("Siła"), material_tab));
-    force_row->addWidget(mat_force_spin_);
-    force_row->addWidget(new QLabel(trInk("Prędk."), material_tab));
-    force_row->addWidget(mat_speed_spin_);
-  lv->addWidget(mat_force_speed_chk_);
-    lv->addLayout(force_row);
-    connect(mat_force_speed_chk_, &QCheckBox::toggled, mat_force_spin_, &QWidget::setEnabled);
-    connect(mat_force_speed_chk_, &QCheckBox::toggled, mat_speed_spin_, &QWidget::setEnabled);
-    mat_force_spin_->setEnabled(false);
-    mat_speed_spin_->setEnabled(false);
-    connect(mat_roll_chk_, &QCheckBox::toggled, this, &MainWindow::onLayoutChanged);
-    connect(mat_force_speed_chk_, &QCheckBox::toggled, this, &MainWindow::onLayoutChanged);
+    mat_speed_spin_->setSuffix(QStringLiteral(" cm/s"));
+    mat_speed_spin_->setValue(120);
+    mat_speed_spin_->setToolTip(trInk(
+        "Prędkość cięcia (VS). Typowo cm/s, zakres ~1–110 zależnie od plotera."));
+    cutter_form->addRow(trInk("Siła (FS)"), mat_force_spin_);
+    cutter_form->addRow(trInk("Prędkość (cm/s)"), mat_speed_spin_);
+    lv->addWidget(mat_cutter_cut_params_);
+
+    mat_gcode_cut_params_ = new QWidget(material_tab);
+    auto* gcode_form = new QFormLayout(mat_gcode_cut_params_);
+    mat_gcode_feed_spin_ = new QSpinBox(mat_gcode_cut_params_);
+    mat_gcode_feed_spin_->setRange(0, 100000);
+    mat_gcode_feed_spin_->setSuffix(QStringLiteral(" mm/min"));
+    mat_gcode_feed_spin_->setToolTip(trInk(
+        "Posuw cięcia (G1). 0 = nie wysyłaj F — obowiązują $110/$111 w GRBL."));
+    mat_gcode_feed_rapid_spin_ = new QSpinBox(mat_gcode_cut_params_);
+    mat_gcode_feed_rapid_spin_->setRange(0, 100000);
+    mat_gcode_feed_rapid_spin_->setSuffix(QStringLiteral(" mm/min"));
+    mat_gcode_feed_rapid_spin_->setToolTip(trInk(
+        "Posuw przejazdów (G0). 0 = nie dodawaj F."));
+    gcode_form->addRow(trInk("Feed cięcia (G1)"), mat_gcode_feed_spin_);
+    gcode_form->addRow(trInk("Feed przejazdu (G0)"), mat_gcode_feed_rapid_spin_);
+    lv->addWidget(mat_gcode_cut_params_);
+
+    const auto cut_paramsChanged = [this]() {
+        updateMaterialCutParamsVisibility();
+        onLayoutChanged();
+    };
+    connect(mat_force_speed_chk_, &QCheckBox::toggled, this, cut_paramsChanged);
     connect(mat_force_spin_, qOverload<int>(&QSpinBox::valueChanged), this, &MainWindow::onLayoutChanged);
     connect(mat_speed_spin_, qOverload<int>(&QSpinBox::valueChanged), this, &MainWindow::onLayoutChanged);
+    connect(mat_gcode_feed_spin_, qOverload<int>(&QSpinBox::valueChanged), this,
+            &MainWindow::onLayoutChanged);
+    connect(mat_gcode_feed_rapid_spin_, qOverload<int>(&QSpinBox::valueChanged), this,
+            &MainWindow::onLayoutChanged);
+    connect(mat_roll_chk_, &QCheckBox::toggled, this, &MainWindow::onLayoutChanged);
 
     lv->addWidget(new QLabel(trInk("Podawanie materiału"), material_tab));
     feed_return_rb_ = new QRadioButton(trInk("Powrót do początku"), material_tab);
@@ -660,6 +686,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     transport_combo_ = new QComboBox(device_host_);
     transport_combo_->addItem(trInk("Port szeregowy"),
                               int(PlotTransportKind::SerialPort));
+    transport_combo_->addItem(QStringLiteral("TCP/IP"), int(PlotTransportKind::TcpIp));
     transport_combo_->addItem(trInk("Zapis do pliku"), int(PlotTransportKind::FileOutput));
     connect(transport_combo_, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &MainWindow::onTransportChanged);
@@ -915,6 +942,15 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     status_form->addRow(QStringLiteral("Krok"), control_step_spin_);
     status_form->addRow(QStringLiteral("Stan"), control_status_label_);
     main_row->addWidget(status_box, 1);
+
+    auto* grbl_box = new QGroupBox(QStringLiteral("GRBL $"), control_tab_);
+    auto* grblv = new QVBoxLayout(grbl_box);
+    grbl_diag_edit_ = new QPlainTextEdit(grbl_box);
+    grbl_diag_edit_->setReadOnly(true);
+    grbl_diag_edit_->setMinimumHeight(120);
+    grbl_diag_edit_->setPlaceholderText(trInk("Brak danych — wyślij zadanie G-code, aby odczytać $$"));
+    grblv->addWidget(grbl_diag_edit_);
+    main_row->addWidget(grbl_box, 1);
     ctrlv->addLayout(main_row);
     ctrlv->addStretch(1);
 
@@ -975,6 +1011,13 @@ PlotJobSettings MainWindow::collectJobSettings() const
         s.material.force = mat_force_spin_->value();
     if (mat_speed_spin_)
         s.material.speed = mat_speed_spin_->value();
+    if (mat_gcode_feed_spin_)
+        s.material.gcode_feed_cut_mm_min = mat_gcode_feed_spin_->value();
+    if (mat_gcode_feed_rapid_spin_)
+        s.material.gcode_feed_rapid_mm_min = mat_gcode_feed_rapid_spin_->value();
+    s.velocity = s.material.speed;
+    s.protocol.gcode.feed_mm_min = s.material.gcode_feed_cut_mm_min;
+    s.protocol.gcode.feed_rapid_mm_min = s.material.gcode_feed_rapid_mm_min;
 
     s.layout.scale_x = scale_pct_x_spin_->value() / 100.0;
     s.layout.scale_y = scale_pct_y_spin_->value() / 100.0;
@@ -1021,6 +1064,19 @@ PlotJobSettings MainWindow::collectJobSettings() const
     s.device.transport =
         static_cast<PlotTransportKind>(transport_combo_->currentData().toInt());
     s.device.port_name = port_edit_->text();
+    if (s.device.transport == PlotTransportKind::TcpIp) {
+        const QString raw = port_edit_->text().trimmed();
+        const int sep = raw.lastIndexOf(QLatin1Char(':'));
+        if (sep > 0) {
+            s.device.tcp_host = raw.left(sep).trimmed();
+            bool ok = false;
+            const int p = raw.mid(sep + 1).trimmed().toInt(&ok);
+            if (ok && p > 0)
+                s.device.tcp_port = p;
+        } else if (!raw.isEmpty()) {
+            s.device.tcp_host = raw;
+        }
+    }
     s.device.baud_rate = baud_spin_->value();
     s.device.output_path = output_path_edit_->text();
     s.device.printer_name = printer_edit_->text().trimmed();
@@ -1339,6 +1395,49 @@ void MainWindow::updateControlStatusLabel()
                                                               : trInk("rozłączony")));
 }
 
+bool MainWindow::sendDeviceCommandBlock(const QString& commands)
+{
+    const QString trimmed = commands.trimmed();
+    if (trimmed.isEmpty())
+        return true;
+    if (!control_serial_ || !control_serial_->isOpen())
+        return false;
+
+    QString payload = trimmed;
+    payload.replace(QStringLiteral("\\n"), QStringLiteral("\n"));
+    payload.replace(QStringLiteral("\\r"), QStringLiteral("\r"));
+    const QByteArray bytes = payload.toUtf8();
+    if (monitor_log_send_chk_->isChecked())
+        appendMonitorRaw(bytes, true);
+    if (!write_all(*control_serial_, bytes))
+        return false;
+    drainSerialToMonitor(*control_serial_);
+    return true;
+}
+
+void MainWindow::runDeviceConnectCommands()
+{
+    if (!control_serial_ || !control_serial_->isOpen())
+        return;
+
+    const PlotJobSettings job = collectJobSettings();
+    sendDeviceCommandBlock(job.device.before_connect_command);
+
+    std::string init;
+    PlotStreamEncoder enc(
+        [&](std::string chunk) { init += std::move(chunk); }, job.protocol);
+    enc.connection_made();
+    if (!init.empty()) {
+        const QByteArray bytes(init.data(), int(init.size()));
+        if (monitor_log_send_chk_->isChecked())
+            appendMonitorRaw(bytes, true);
+        write_all(*control_serial_, bytes);
+        drainSerialToMonitor(*control_serial_);
+    }
+
+    sendDeviceCommandBlock(job.device.after_connect_command);
+}
+
 bool MainWindow::sendControlRawCommand(const QString& command)
 {
     const QString trimmed = command.trimmed();
@@ -1428,6 +1527,17 @@ void MainWindow::onControlConnectToggle()
     stopLiveListen();
 
     control_serial_ = std::make_unique<QSerialPort>();
+    const auto kind =
+        static_cast<PlotTransportKind>(transport_combo_->currentData().toInt());
+    if (kind != PlotTransportKind::SerialPort) {
+        QMessageBox::information(this, QStringLiteral("Inkcut"),
+                                 trInk("Sterowanie ręczne działa tylko dla portu szeregowego."));
+        QSignalBlocker b2(control_connect_btn_);
+        control_connect_btn_->setChecked(false);
+        control_serial_.reset();
+        return;
+    }
+
     SerialOpenOptions opt = serial_open_options_from_device(active_device_);
     opt.port_name = port_edit_->text();
     opt.baud_rate = baud_spin_->value();
@@ -1444,6 +1554,7 @@ void MainWindow::onControlConnectToggle()
     applyControlConnectUi(true);
     updateControlStatusLabel();
     appendMonitorRaw(trInk("[control] połączono %1\n").arg(opt.port_name).toUtf8(), false);
+    runDeviceConnectCommands();
 }
 
 void MainWindow::onControlPenUp()
@@ -1955,10 +2066,12 @@ void MainWindow::onSend()
     const QByteArray payload = QByteArray::fromStdString(program);
     send_total_bytes_ = payload.size();
 
-    if (last_job_settings_.velocity > 0) {
+    const int est_speed = last_job_settings_.material.use_custom_force_speed
+                              ? last_job_settings_.material.speed
+                              : last_job_settings_.velocity;
+    if (est_speed > 0) {
         const double len = model_path.length();
-        send_duration_estimate_sec_ =
-            int(qMax(1.0, len / double(last_job_settings_.velocity)));
+        send_duration_estimate_sec_ = int(qMax(1.0, len / double(est_speed)));
     } else if (send_total_bytes_ > 0) {
         send_duration_estimate_sec_ = int(qMax(1.0, send_total_bytes_ / 1200.0));
     }
@@ -2007,6 +2120,7 @@ void MainWindow::onSend()
     send_worker_ = new PlotSendWorker();
     send_worker_->setPayload(payload);
     send_worker_->setDevice(last_job_settings_.device);
+    send_worker_->setProtocolSettings(last_job_settings_.protocol);
     send_worker_->setLiveParse(last_job_settings_.protocol.protocol,
                                last_job_settings_.protocol.plot_scale);
 
@@ -2015,6 +2129,7 @@ void MainWindow::onSend()
     connect(send_thread_.get(), &QThread::started, send_worker_, &PlotSendWorker::run);
     connect(send_worker_, &PlotSendWorker::progress, this, &MainWindow::onSendProgress);
     connect(send_worker_, &PlotSendWorker::livePosition, this, &MainWindow::onSendLivePosition);
+    connect(send_worker_, &PlotSendWorker::grblSettingsReady, this, &MainWindow::onGrblSettingsReady);
     connect(send_worker_, &PlotSendWorker::finished, this, &MainWindow::onSendFinished);
     connect(send_worker_, &PlotSendWorker::finished, send_thread_.get(), &QThread::quit);
 
@@ -2327,6 +2442,8 @@ void MainWindow::onOpenDeviceSetup()
         return;
     applyJobSettingsToUi(job);
     pipeline_cache_.plugin_id = job.plugin_id;
+    pipeline_cache_.protocol = job.protocol;
+    updateMaterialCutParamsVisibility();
     savePersistedSettings();
     rebuildPreview();
 }
@@ -2460,8 +2577,22 @@ void MainWindow::applyJobSettingsToUi(const PlotJobSettings& job)
         mat_force_speed_chk_->setChecked(job.material.use_custom_force_speed);
     if (mat_force_spin_)
         mat_force_spin_->setValue(job.material.force);
-    if (mat_speed_spin_)
-        mat_speed_spin_->setValue(job.material.speed);
+    if (mat_speed_spin_) {
+        const int spd = job.material.speed > 0 ? job.material.speed : job.velocity;
+        mat_speed_spin_->setValue(spd > 0 ? spd : 120);
+    }
+    if (mat_gcode_feed_spin_) {
+        const int cut = job.material.gcode_feed_cut_mm_min > 0 ? job.material.gcode_feed_cut_mm_min
+                                                               : job.protocol.gcode.feed_mm_min;
+        mat_gcode_feed_spin_->setValue(cut);
+    }
+    if (mat_gcode_feed_rapid_spin_) {
+        const int rapid = job.material.gcode_feed_rapid_mm_min > 0
+                              ? job.material.gcode_feed_rapid_mm_min
+                              : job.protocol.gcode.feed_rapid_mm_min;
+        mat_gcode_feed_rapid_spin_->setValue(rapid);
+    }
+    updateMaterialCutParamsVisibility();
 
     auto_shift_chk_->setChecked(job.layout.auto_shift);
     align_center_x_chk_->setChecked(job.layout.align_center_x);
@@ -2526,17 +2657,30 @@ void MainWindow::applyJobSettingsToUi(const PlotJobSettings& job)
         transport = PlotTransportKind::SerialPort;
     const int tidx = transport_combo_->findData(int(transport));
     transport_combo_->setCurrentIndex(tidx >= 0 ? tidx : 0);
-    port_edit_->setText(job.device.port_name);
+    if (job.device.transport == PlotTransportKind::TcpIp)
+        port_edit_->setText(QStringLiteral("%1:%2").arg(job.device.tcp_host).arg(job.device.tcp_port));
+    else
+        port_edit_->setText(job.device.port_name);
     baud_spin_->setValue(job.device.baud_rate);
     output_path_edit_->setText(job.device.output_path);
     if (printer_edit_)
         printer_edit_->setText(job.device.printer_name);
 
     active_device_ = job.device;
+    if (active_device_.tcp_host.isEmpty())
+        active_device_.tcp_host = QStringLiteral("127.0.0.1");
+    if (active_device_.tcp_port <= 0)
+        active_device_.tcp_port = 23;
     onTransportChanged(0);
 
     if (!current_svg_xml_.isEmpty())
         refreshLayerAndColorLists();
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    savePersistedSettings();
+    QMainWindow::closeEvent(event);
 }
 
 void MainWindow::loadPersistedSettings()
@@ -2548,8 +2692,10 @@ void MainWindow::loadPersistedSettings()
     if (raw.isEmpty())
         return;
     PlotJobSettings job;
-    if (plotJobSettingsFromJsonString(raw, job, nullptr))
+    if (plotJobSettingsFromJsonString(raw, job, nullptr)) {
+        applyPersistedDeviceProfile(job);
         applyJobSettingsToUi(job);
+    }
 }
 
 void MainWindow::savePersistedSettings()
@@ -2561,12 +2707,32 @@ void MainWindow::savePersistedSettings()
     saveAppSettings(app_settings_);
 }
 
+void MainWindow::updateMaterialCutParamsVisibility()
+{
+    const PlotProtocol proto = pipeline_cache_.protocol.protocol;
+    const bool is_gcode = proto == PlotProtocol::GCode;
+    const bool custom = mat_force_speed_chk_ && mat_force_speed_chk_->isChecked();
+    if (mat_cutter_cut_params_)
+        mat_cutter_cut_params_->setVisible(!is_gcode);
+    if (mat_gcode_cut_params_)
+        mat_gcode_cut_params_->setVisible(is_gcode);
+    if (mat_force_spin_)
+        mat_force_spin_->setEnabled(custom && !is_gcode);
+    if (mat_speed_spin_)
+        mat_speed_spin_->setEnabled(custom && !is_gcode);
+    if (mat_gcode_feed_spin_)
+        mat_gcode_feed_spin_->setEnabled(custom && is_gcode);
+    if (mat_gcode_feed_rapid_spin_)
+        mat_gcode_feed_rapid_spin_->setEnabled(custom && is_gcode);
+}
+
 void MainWindow::onPresetChanged(int idx)
 {
     DevicePreset p;
     if (!devicePresetById(preset_combo_->itemData(idx).toString(), p))
         return;
     applyPresetToUi(p);
+    updateMaterialCutParamsVisibility();
     savePersistedSettings();
     rebuildPreview();
 }
@@ -2582,10 +2748,17 @@ void MainWindow::onTransportChanged(int)
 {
     const auto kind =
         static_cast<PlotTransportKind>(transport_combo_->currentData().toInt());
+    const bool tcp = kind == PlotTransportKind::TcpIp;
     const bool file_out = kind == PlotTransportKind::FileOutput;
     if (output_path_edit_)
         output_path_edit_->setVisible(file_out);
-    port_edit_->setEnabled(kind == PlotTransportKind::SerialPort);
+    if (tcp) {
+        if (port_edit_ && !port_edit_->text().contains(QLatin1Char(':')))
+            port_edit_->setText(QStringLiteral("%1:%2").arg(active_device_.tcp_host).arg(active_device_.tcp_port));
+    } else if (port_edit_ && port_edit_->text().contains(QLatin1Char(':'))) {
+        port_edit_->setText(active_device_.port_name);
+    }
+    port_edit_->setEnabled(kind == PlotTransportKind::SerialPort || tcp);
     baud_spin_->setEnabled(kind == PlotTransportKind::SerialPort);
 }
 
@@ -2924,6 +3097,23 @@ void MainWindow::onSendLivePosition(double x, double y)
                                           .arg(user.y(), 0, 'f', 2));
 }
 
+void MainWindow::onGrblSettingsReady(const QMap<int, double>& settings)
+{
+    grbl_settings_cache_ui_ = settings;
+    if (!grbl_diag_edit_)
+        return;
+    const QList<int> keys = {100, 101, 102, 110, 111, 120, 121, 30, 31, 10, 32};
+    QStringList lines;
+    lines << QStringLiteral("GRBL settings cache:");
+    for (const int k : keys) {
+        if (settings.contains(k))
+            lines << QStringLiteral("$%1 = %2").arg(k).arg(settings.value(k), 0, 'f', 3);
+    }
+    if (lines.size() == 1)
+        lines << trInk("Brak wybranych kluczy w odpowiedzi $$.");
+    grbl_diag_edit_->setPlainText(lines.join(QLatin1Char('\n')));
+}
+
 void MainWindow::onSendFinished(bool ok, const QString& err)
 {
     send_active_ = false;
@@ -2981,6 +3171,9 @@ void MainWindow::updateUnitSuffixes()
 
 void MainWindow::retranslateUi()
 {
+    if (mat_force_speed_chk_)
+        mat_force_speed_chk_->setText(trInk("Własna siła / prędkość cięcia"));
+
     if (file_menu_)
         file_menu_->setTitle(trInk("Plik"));
     if (open_svg_action_)

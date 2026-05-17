@@ -20,9 +20,13 @@ struct MaterialSettings {
     double padding_bottom = 10;
     bool is_roll = false;
     double cost_per_area = 0;
+    /// Gdy true, wysyłane są FS/VS (plotery) lub F w G-code (GRBL).
     bool use_custom_force_speed = false;
     int force = 10;
-    int speed = 10;
+    /// Prędkość cięcia (cm/s) — HPGL VS i pokrewne.
+    int speed = 120;
+    int gcode_feed_cut_mm_min = 0;
+    int gcode_feed_rapid_mm_min = 0;
 };
 
 struct GraphicLayoutSettings {
@@ -77,7 +81,7 @@ struct ColorFilterEntry {
     int pass_count = 1;
 };
 
-enum class PlotTransportKind { SerialPort, FileOutput, Printer };
+enum class PlotTransportKind { SerialPort, TcpIp, FileOutput, Printer };
 
 struct DeviceSetup {
     QString name;
@@ -88,6 +92,8 @@ struct DeviceSetup {
     PlotTransportKind transport = PlotTransportKind::SerialPort;
     QString port_name = QStringLiteral("/dev/ttyUSB0");
     qint32 baud_rate = 115200;
+    QString tcp_host = QStringLiteral("127.0.0.1");
+    int tcp_port = 23;
     /// 5, 6, 7 lub 8 (QSerialPort::DataBits).
     int data_bits = 8;
     /// 0=None, 1=Even, 2=Odd, 3=Space, 4=Mark.
@@ -103,7 +109,8 @@ struct DeviceSetup {
     bool mirror_x = false;
     bool mirror_y = false;
     double device_scale = 1.0;
-    /// Po połączeniu / przed i po jobie (HPGL lub G-code, linie rozdzielone \\n).
+    /// Przed/po połączeniu oraz przed/po jobie (HPGL lub G-code, linie rozdzielone \\n).
+    QString before_connect_command;
     QString after_connect_command;
     QString before_job_command;
     QString after_job_command;
