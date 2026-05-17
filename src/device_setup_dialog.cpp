@@ -53,6 +53,20 @@ void styleFormLayout(QFormLayout* form, UiProfile profile)
     form->setLabelAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 }
 
+/// QFormLayout::setRowVisible wymaga Qt >= 6.8; jammy ma Qt 6.2.
+void setFormRowVisible(QFormLayout* form, QWidget* field, bool visible)
+{
+    if (!form || !field)
+        return;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    form->setRowVisible(field, visible);
+#else
+    field->setVisible(visible);
+    if (QWidget* label = form->labelForField(field))
+        label->setVisible(visible);
+#endif
+}
+
 QScrollArea* wrapTabInScroll(QWidget* page)
 {
     auto* scroll = new QScrollArea();
@@ -1140,14 +1154,10 @@ private:
             static_cast<PlotTransportKind>(transport_combo_->currentData().toInt());
         const bool serial = kind == PlotTransportKind::SerialPort;
         const bool file_out = kind == PlotTransportKind::FileOutput;
-        auto rowVisible = [this](QWidget* field, bool visible) {
-            if (field && conn_form_)
-                conn_form_->setRowVisible(field, visible);
-        };
-        rowVisible(port_row_widget_, serial);
-        rowVisible(serial_params_row_widget_, serial);
-        rowVisible(flow_widget_, serial);
-        rowVisible(output_row_widget_, file_out);
+        setFormRowVisible(conn_form_, port_row_widget_, serial);
+        setFormRowVisible(conn_form_, serial_params_row_widget_, serial);
+        setFormRowVisible(conn_form_, flow_widget_, serial);
+        setFormRowVisible(conn_form_, output_row_widget_, file_out);
     }
 
     void refreshSerialPorts()
