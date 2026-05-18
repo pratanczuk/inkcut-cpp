@@ -1,4 +1,14 @@
-inkcut-cpp (0.4.0-1) UNRELEASED; urgency=medium
+inkcut-cpp (0.4.1-1) UNRELEASED; urgency=medium
+
+  * Separate plotter work area from material dimensions in model, UI, and preview.
+  * Cutting-mat style work-area overlay with rulers (no internal grid).
+  * Tablet Layers panel layout fixes; Material tab label and custom speed checkbox.
+  * Remove duplicate material size fields from Device Setup General tab.
+  * Drop legacy minimum device area (508×762 mm) inherited from HPGL defaults.
+
+ -- pratanczuk <pratanczuk@users.noreply.github.com>  Mon, 18 May 2026 12:00:00 +0200
+
+inkcut-cpp (0.4.0-1) unstable; urgency=medium
 
   * Product focus narrowed to G-code/GRBLHAL only.
   * Removed non-G-code protocol choices from UI and CLI defaults.
