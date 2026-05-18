@@ -13,8 +13,10 @@ struct DevicePreset {
     QString model;
     double material_width = 600;
     double material_height = 400;
+    /// Physical work area of the plotter (mm). Independent from material size.
+    double work_area_width = 300.0;
+    double work_area_height = 300.0;
     PlotProtocol default_protocol = PlotProtocol::GCode;
-    int dmpl_mode = 1;
     bool swap_xy = false;
     bool mirror_x = false;
     bool mirror_y = false;

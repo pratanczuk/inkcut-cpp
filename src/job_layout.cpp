@@ -88,11 +88,18 @@ QPainterPath materialAvailableAreaPath(const MaterialSettings& m)
 
 QPainterPath deviceAreaPath(const MaterialSettings& material)
 {
-    // Inkcut defaults: 1800×2700 plot units ≈ 20×30 in.
-    constexpr double kDefaultW = 1800.0 / 3.5433070866;
-    constexpr double kDefaultH = 2700.0 / 3.5433070866;
-    const double w = std::max(kDefaultW, material.width);
-    const double h = std::max(kDefaultH, material.height);
+    const double w = std::max(1.0, material.width);
+    const double h = std::max(1.0, material.height);
+    QPainterPath p;
+    p.addRect(0, 0, w, h);
+    return p;
+}
+
+QPainterPath deviceAreaPath(const DeviceSetup& device, const MaterialSettings& /*material*/)
+{
+    // Work-area is independent from material size and always required.
+    const double w = std::max(1.0, device.work_area_width);
+    const double h = std::max(1.0, device.work_area_height);
     QPainterPath p;
     p.addRect(0, 0, w, h);
     return p;

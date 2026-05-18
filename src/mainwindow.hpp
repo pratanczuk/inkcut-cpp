@@ -38,6 +38,7 @@ class QPlainTextEdit;
 class QProgressBar;
 class QPushButton;
 class QRadioButton;
+class QScrollArea;
 class QSerialPort;
 class QSpinBox;
 class QTableWidget;
@@ -61,6 +62,8 @@ public:
 
 protected:
     void closeEvent(QCloseEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
+    bool eventFilter(QObject* obj, QEvent* event) override;
 
 private slots:
     void onOpenSvg();
@@ -129,6 +132,7 @@ private:
     void applyJobSettingsToUi(const PlotJobSettings& job);
     void applyAppSettingsToUi();
     void applyUiProfile();
+    void updateLayersPanelMetrics();
     void applyPresetToUi(const DevicePreset& preset);
     void loadPersistedSettings();
     void savePersistedSettings();
@@ -178,8 +182,6 @@ private:
     QComboBox* transport_combo_ = nullptr;
     QComboBox* plugin_combo_ = nullptr;
     QLineEdit* port_edit_ = nullptr;
-    QLineEdit* printer_edit_ = nullptr;
-    QLineEdit* output_path_edit_ = nullptr;
     QSpinBox* baud_spin_ = nullptr;
     QMenu* file_menu_ = nullptr;
     QMenu* device_menu_ = nullptr;
@@ -246,6 +248,7 @@ private:
     QLabel* dxf_layers_hint_ = nullptr;
     QListWidget* fill_color_list_ = nullptr;
     QListWidget* stroke_color_list_ = nullptr;
+    QScrollArea* layers_scroll_ = nullptr;
 
     QPushButton* plugin_refresh_btn_ = nullptr;
     QPushButton* send_pause_btn_ = nullptr;

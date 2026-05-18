@@ -87,10 +87,10 @@ struct DeviceProfile {
     DeviceSetup device;
     double width = 600;
     double height = 400;
+    /// Physical work area of the plotter (mm). 0 = unknown.
+    double work_area_width = 0.0;
+    double work_area_height = 0.0;
     PlotProtocol protocol = PlotProtocol::GCode;
-    int dmpl_mode = 1;
-    double plot_scale = 1021.0 / 90.0;
-    bool hpgl_pad = false;
     int velocity = 120;
     bool gcode_builtin = true;
     GCodeProtocolSettings::Dialect gcode_dialect = GCodeProtocolSettings::Dialect::Generic;
@@ -149,6 +149,8 @@ DeviceProfile profileFromJob(const PlotJobSettings& job)
     p.custom = job.device.custom;
     p.width = job.material.width;
     p.height = job.material.height;
+    p.work_area_width = job.device.work_area_width;
+    p.work_area_height = job.device.work_area_height;
     p.velocity = job.material.speed > 0 ? job.material.speed : job.velocity;
     p.gcode_feed_mm_min = job.material.gcode_feed_cut_mm_min > 0
                               ? job.material.gcode_feed_cut_mm_min
@@ -157,9 +159,6 @@ DeviceProfile profileFromJob(const PlotJobSettings& job)
                                     ? job.material.gcode_feed_rapid_mm_min
                                     : job.protocol.gcode.feed_rapid_mm_min;
     p.protocol = job.protocol.protocol;
-    p.dmpl_mode = job.protocol.dmpl_mode;
-    p.plot_scale = job.protocol.plot_scale;
-    p.hpgl_pad = job.protocol.hpgl_pad;
     p.velocity = job.velocity;
     p.gcode_builtin = job.protocol.gcode.use_builtin;
     p.gcode_dialect = job.protocol.gcode.dialect;
@@ -194,16 +193,14 @@ void profileToJob(const DeviceProfile& p, PlotJobSettings& job)
     job.device = p.device;
     job.device.custom = p.custom;
     job.device.name = p.name;
-    job.material.width = p.width;
-    job.material.height = p.height;
+    job.device.work_area_width = p.work_area_width;
+    job.device.work_area_height = p.work_area_height;
+    // Material size is edited only in the main window Material tab — not from device profile.
     job.material.speed = p.velocity;
     job.material.gcode_feed_cut_mm_min = p.gcode_feed_mm_min;
     job.material.gcode_feed_rapid_mm_min = p.gcode_feed_rapid_mm_min;
     job.velocity = p.velocity;
     job.protocol.protocol = p.protocol;
-    job.protocol.dmpl_mode = p.dmpl_mode;
-    job.protocol.plot_scale = p.plot_scale;
-    job.protocol.hpgl_pad = p.hpgl_pad;
     job.velocity = p.velocity;
     job.protocol.gcode.use_builtin = p.gcode_builtin;
     job.protocol.gcode.dialect = p.gcode_dialect;
@@ -236,17 +233,15 @@ void applyPresetToProfile(const DevicePreset& preset, DeviceProfile& p)
     p.device.mirror_x = preset.mirror_x;
     p.device.mirror_y = preset.mirror_y;
     p.protocol = preset.default_protocol;
-    p.dmpl_mode = preset.dmpl_mode;
     if (preset.default_protocol == PlotProtocol::GCode) {
-        p.plot_scale = 1.0;
         p.gcode_dialect = preset.gcode_dialect;
         p.gcode_lift = preset.gcode_lift_mode;
         p.gcode_pwm_up = preset.solenoid_pwm_up;
         p.gcode_pwm_down = preset.solenoid_pwm_down;
         p.gcode_pwm_max = preset.solenoid_pwm_max;
     }
-    p.width = preset.material_width;
-    p.height = preset.material_height;
+    p.work_area_width = preset.work_area_width;
+    p.work_area_height = preset.work_area_height;
     if (p.name.isEmpty() || p.name == trInk("Nowe urządzenie"))
         p.name = QStringLiteral("%1 %2").arg(preset.manufacturer, preset.model);
 }
@@ -270,18 +265,15 @@ QJsonObject profileToJson(const DeviceProfile& p)
     o.insert(QStringLiteral("flow_rts_cts"), p.device.flow_rts_cts);
     o.insert(QStringLiteral("flow_dsr_dtr"), p.device.flow_dsr_dtr);
     o.insert(QStringLiteral("flow_xon_xoff"), p.device.flow_xon_xoff);
-    o.insert(QStringLiteral("output"), p.device.output_path);
-    o.insert(QStringLiteral("printer"), p.device.printer_name);
     o.insert(QStringLiteral("swap_xy"), p.device.swap_xy);
     o.insert(QStringLiteral("mirror_x"), p.device.mirror_x);
     o.insert(QStringLiteral("mirror_y"), p.device.mirror_y);
     o.insert(QStringLiteral("device_scale"), p.device.device_scale);
     o.insert(QStringLiteral("width"), p.width);
     o.insert(QStringLiteral("height"), p.height);
+    o.insert(QStringLiteral("work_area_width"), p.work_area_width);
+    o.insert(QStringLiteral("work_area_height"), p.work_area_height);
     o.insert(QStringLiteral("protocol"), int(p.protocol));
-    o.insert(QStringLiteral("dmpl_mode"), p.dmpl_mode);
-    o.insert(QStringLiteral("plot_scale"), p.plot_scale);
-    o.insert(QStringLiteral("hpgl_pad"), p.hpgl_pad);
     o.insert(QStringLiteral("velocity"), p.velocity);
     o.insert(QStringLiteral("gcode_builtin"), p.gcode_builtin);
     o.insert(QStringLiteral("gcode_dialect"), int(p.gcode_dialect));
@@ -341,18 +333,19 @@ DeviceProfile profileFromJson(const QJsonObject& o)
     p.device.flow_rts_cts = o.value(QStringLiteral("flow_rts_cts")).toBool();
     p.device.flow_dsr_dtr = o.value(QStringLiteral("flow_dsr_dtr")).toBool();
     p.device.flow_xon_xoff = o.value(QStringLiteral("flow_xon_xoff")).toBool();
-    p.device.output_path = o.value(QStringLiteral("output")).toString();
-    p.device.printer_name = o.value(QStringLiteral("printer")).toString();
     p.device.swap_xy = o.value(QStringLiteral("swap_xy")).toBool();
     p.device.mirror_x = o.value(QStringLiteral("mirror_x")).toBool();
     p.device.mirror_y = o.value(QStringLiteral("mirror_y")).toBool();
     p.device.device_scale = o.value(QStringLiteral("device_scale")).toDouble(1.0);
     p.width = o.value(QStringLiteral("width")).toDouble(600);
     p.height = o.value(QStringLiteral("height")).toDouble(400);
+    p.work_area_width = o.value(QStringLiteral("work_area_width")).toDouble(300.0);
+    p.work_area_height = o.value(QStringLiteral("work_area_height")).toDouble(300.0);
+    if (p.work_area_width <= 0.0)
+        p.work_area_width = 300.0;
+    if (p.work_area_height <= 0.0)
+        p.work_area_height = 300.0;
     p.protocol = static_cast<PlotProtocol>(o.value(QStringLiteral("protocol")).toInt());
-    p.dmpl_mode = o.value(QStringLiteral("dmpl_mode")).toInt(1);
-    p.plot_scale = o.value(QStringLiteral("plot_scale")).toDouble(1021.0 / 90.0);
-    p.hpgl_pad = o.value(QStringLiteral("hpgl_pad")).toBool();
     p.velocity = o.value(QStringLiteral("velocity")).toInt(120);
     p.gcode_builtin = o.value(QStringLiteral("gcode_builtin")).toBool(true);
     p.gcode_dialect = static_cast<GCodeProtocolSettings::Dialect>(
@@ -531,30 +524,29 @@ private:
 
         tabs_ = new QTabWidget(dlg_);
 
-        // --- Ogólne ---
+        // --- Ogólne (2 columns) ---
         auto* general = new QWidget(tabs_);
-        auto* gform = new QFormLayout(general);
-        styleFormLayout(gform, ui_profile_);
+        auto* ggrid = new QGridLayout(general);
+        ggrid->setContentsMargins(6, 6, 6, 6);
+        ggrid->setHorizontalSpacing(8);
+        ggrid->setVerticalSpacing(6);
         name_edit_ = new QLineEdit(general);
         driver_combo_ = new QComboBox(general);
         fillPresetCombo(driver_combo_);
         mfg_edit_ = new QLineEdit(general);
         model_edit_ = new QLineEdit(general);
-        width_spin_ = new QDoubleSpinBox(general);
-        height_spin_ = new QDoubleSpinBox(general);
-        for (QDoubleSpinBox* s : {width_spin_, height_spin_}) {
-            s->setRange(0.1, 99999.9);
-            s->setDecimals(2);
-            s->setSuffix(QStringLiteral(" mm"));
-        }
         custom_chk_ = new QCheckBox(trInk("Własne"), general);
-        gform->addRow(trInk("Nazwa"), name_edit_);
-        gform->addRow(trInk("Sterownik"), driver_combo_);
-        gform->addRow(trInk("Producent"), mfg_edit_);
-        gform->addRow(trInk("Model"), model_edit_);
-        gform->addRow(trInk("Szerokość"), width_spin_);
-        gform->addRow(trInk("Długość"), height_spin_);
-        gform->addRow(QString(), custom_chk_);
+        ggrid->addWidget(new QLabel(trInk("Nazwa"), general), 0, 0);
+        ggrid->addWidget(name_edit_, 0, 1);
+        ggrid->addWidget(new QLabel(trInk("Sterownik"), general), 0, 2);
+        ggrid->addWidget(driver_combo_, 0, 3);
+        ggrid->addWidget(new QLabel(trInk("Producent"), general), 1, 0);
+        ggrid->addWidget(mfg_edit_, 1, 1);
+        ggrid->addWidget(new QLabel(trInk("Model"), general), 1, 2);
+        ggrid->addWidget(model_edit_, 1, 3);
+        ggrid->addWidget(custom_chk_, 2, 0, 1, 4);
+        ggrid->setColumnStretch(1, 1);
+        ggrid->setColumnStretch(3, 1);
         tabs_->addTab(wrapTabInScroll(general), trInk("Ogólne"));
 
         // --- Urządzenie ---
@@ -567,10 +559,28 @@ private:
         scale_spin_ = new QDoubleSpinBox(device_tab);
         scale_spin_->setRange(0.001, 1000);
         scale_spin_->setDecimals(6);
+        work_area_w_spin_ = new QDoubleSpinBox(device_tab);
+        work_area_h_spin_ = new QDoubleSpinBox(device_tab);
+        for (QDoubleSpinBox* s : {work_area_w_spin_, work_area_h_spin_}) {
+            s->setRange(1.0, 99999.9);
+            s->setDecimals(2);
+            s->setSuffix(QStringLiteral(" mm"));
+        }
         dform->addRow(swap_chk_);
         dform->addRow(mirror_x_chk_);
         dform->addRow(mirror_y_chk_);
         dform->addRow(trInk("Skala wyjścia"), scale_spin_);
+        auto* work_area_row = new QWidget(device_tab);
+        auto* work_area_grid = new QGridLayout(work_area_row);
+        work_area_grid->setContentsMargins(0, 0, 0, 0);
+        work_area_grid->setHorizontalSpacing(8);
+        work_area_grid->addWidget(new QLabel(trInk("Obszar roboczy — szer."), work_area_row), 0, 0);
+        work_area_grid->addWidget(work_area_w_spin_, 0, 1);
+        work_area_grid->addWidget(new QLabel(trInk("Obszar roboczy — wys."), work_area_row), 0, 2);
+        work_area_grid->addWidget(work_area_h_spin_, 0, 3);
+        work_area_grid->setColumnStretch(1, 1);
+        work_area_grid->setColumnStretch(3, 1);
+        dform->addRow(work_area_row);
 
         auto* commands_group = new QGroupBox(trInk("Komendy"), device_tab);
         auto* commands_grid = new QGridLayout(commands_group);
@@ -614,7 +624,6 @@ private:
         transport_combo_ = new QComboBox(conn);
         transport_combo_->addItem(trInk("Port szeregowy"), int(PlotTransportKind::SerialPort));
         transport_combo_->addItem(QStringLiteral("TCP/IP"), int(PlotTransportKind::TcpIp));
-        transport_combo_->addItem(trInk("Zapis do pliku"), int(PlotTransportKind::FileOutput));
 
         port_row_widget_ = new QWidget(conn);
         port_combo_ = new QComboBox(port_row_widget_);
@@ -677,14 +686,6 @@ private:
         flow_row->addWidget(flow_xon_chk_);
         flow_row->addStretch();
 
-        output_edit_ = new QLineEdit(conn);
-        browse_btn_ = new QPushButton(QStringLiteral("…"), conn);
-        output_row_widget_ = new QWidget(conn);
-        auto* out_row = new QHBoxLayout(output_row_widget_);
-        out_row->setContentsMargins(0, 0, 0, 0);
-        out_row->addWidget(output_edit_, 1);
-        out_row->addWidget(browse_btn_);
-
         tcp_row_widget_ = new QWidget(conn);
         auto* tcp_row = new QHBoxLayout(tcp_row_widget_);
         tcp_row->setContentsMargins(0, 0, 0, 0);
@@ -702,7 +703,6 @@ private:
         conn_form_->addRow(QString(), serial_params_row_widget_);
         conn_form_->addRow(QStringLiteral("TCP"), tcp_row_widget_);
         conn_form_->addRow(trInk("Kontrola przepływu"), flow_widget_);
-        conn_form_->addRow(trInk("Plik wyjściowy"), output_row_widget_);
         tabs_->addTab(wrapTabInScroll(conn), trInk("Połączenie"));
 
         // --- Protokół ---
@@ -711,9 +711,6 @@ private:
         styleFormLayout(pform, ui_profile_);
         protocol_combo_ = new QComboBox(proto);
         protocol_combo_->addItem(protocolLabel(PlotProtocol::GCode), int(PlotProtocol::GCode));
-        plot_scale_spin_ = new QDoubleSpinBox(proto);
-        plot_scale_spin_->setRange(0.001, 100000);
-        plot_scale_spin_->setDecimals(4);
         gcode_builtin_chk_ = new QCheckBox(trInk("Wbudowane komendy start/stop"), proto);
         gcode_lift_combo_ = new QComboBox(proto);
         gcode_lift_combo_->addItem(QStringLiteral("Implicit (G00/G01)"),
@@ -737,7 +734,6 @@ private:
             s->setRange(-999, 999);
             s->setDecimals(3);
         }
-        plot_scale_row_label_ = new QLabel(trInk("Skala plotera"), proto);
         gcode_group_ = new QGroupBox(trInk("G-code / GRBL"), proto);
         auto* gcode_form = new QFormLayout(gcode_group_);
         gcode_form->addRow(gcode_builtin_chk_);
@@ -773,19 +769,21 @@ private:
         gcode_form->addRow(pwm_max_label_, pwm_max_spin_);
 
         pform->addRow(trInk("Język"), protocol_combo_);
-        pform->addRow(plot_scale_row_label_, plot_scale_spin_);
         pform->addRow(gcode_group_);
         tabs_->addTab(wrapTabInScroll(proto), trInk("Protokół"));
 
-        // --- Filtry urządzenia ---
+        // --- Filtry urządzenia (2-column grid so all groups fit on one screen) ---
         auto* filters = new QWidget(tabs_);
-        auto* filters_scroll = new QScrollArea(filters);
-        filters_scroll->setWidgetResizable(true);
-        auto* filters_inner = new QWidget(filters_scroll);
-        auto* fv = new QVBoxLayout(filters_inner);
+        auto* fgrid = new QGridLayout(filters);
+        fgrid->setContentsMargins(6, 6, 6, 6);
+        fgrid->setHorizontalSpacing(8);
+        fgrid->setVerticalSpacing(8);
 
-        auto* blade_gb = new QGroupBox(trInk("Offset ostrza"), filters_inner);
-        auto* blade_form = new QFormLayout(blade_gb);
+        auto* blade_gb = new QGroupBox(trInk("Offset ostrza"), filters);
+        auto* blade_grid = new QGridLayout(blade_gb);
+        blade_grid->setContentsMargins(8, 8, 8, 8);
+        blade_grid->setHorizontalSpacing(6);
+        blade_grid->setVerticalSpacing(4);
         blade_offset_spin_ = new QDoubleSpinBox(blade_gb);
         blade_offset_spin_->setRange(0, 50);
         blade_offset_spin_->setDecimals(3);
@@ -794,24 +792,39 @@ private:
         blade_cutoff_spin_->setDecimals(1);
         blade_quality_spin_ = new QDoubleSpinBox(blade_gb);
         blade_quality_spin_->setRange(0.001, 100);
-        blade_form->addRow(trInk("Offset"), blade_offset_spin_);
-        blade_form->addRow(trInk("Kąt odcięcia"), blade_cutoff_spin_);
-        blade_form->addRow(trInk("Jakość"), blade_quality_spin_);
+        blade_grid->addWidget(new QLabel(trInk("Offset"), blade_gb), 0, 0);
+        blade_grid->addWidget(blade_offset_spin_, 0, 1);
+        blade_grid->addWidget(new QLabel(trInk("Kąt odcięcia"), blade_gb), 0, 2);
+        blade_grid->addWidget(blade_cutoff_spin_, 0, 3);
+        blade_grid->addWidget(new QLabel(trInk("Jakość"), blade_gb), 1, 0);
+        blade_grid->addWidget(blade_quality_spin_, 1, 1, 1, 3);
+        blade_grid->setColumnStretch(1, 1);
+        blade_grid->setColumnStretch(3, 1);
 
-        auto* overcut_gb = new QGroupBox(QStringLiteral("Overcut"), filters_inner);
-        auto* overcut_form = new QFormLayout(overcut_gb);
+        auto* overcut_gb = new QGroupBox(QStringLiteral("Overcut"), filters);
+        auto* overcut_grid = new QGridLayout(overcut_gb);
+        overcut_grid->setContentsMargins(8, 8, 8, 8);
+        overcut_grid->setHorizontalSpacing(6);
+        overcut_grid->setVerticalSpacing(4);
         overcut_spin_ = new QDoubleSpinBox(overcut_gb);
         overcut_spin_->setRange(0, 50);
         overcut_spin_->setDecimals(3);
-        overcut_form->addRow(QStringLiteral("Overcut"), overcut_spin_);
         closed_poly_eps_spin_ = new QDoubleSpinBox(overcut_gb);
         closed_poly_eps_spin_->setRange(0.001, 50);
         closed_poly_eps_spin_->setDecimals(3);
         closed_poly_eps_spin_->setValue(0.25);
-        overcut_form->addRow(trInk("Próg zamknięcia"), closed_poly_eps_spin_);
+        overcut_grid->addWidget(new QLabel(QStringLiteral("Overcut"), overcut_gb), 0, 0);
+        overcut_grid->addWidget(overcut_spin_, 0, 1);
+        overcut_grid->addWidget(new QLabel(trInk("Próg zamknięcia"), overcut_gb), 0, 2);
+        overcut_grid->addWidget(closed_poly_eps_spin_, 0, 3);
+        overcut_grid->setColumnStretch(1, 1);
+        overcut_grid->setColumnStretch(3, 1);
 
-        auto* min_gb = new QGroupBox(trInk("Min. linia"), filters_inner);
-        auto* min_form = new QFormLayout(min_gb);
+        auto* min_gb = new QGroupBox(trInk("Min. linia"), filters);
+        auto* min_grid = new QGridLayout(min_gb);
+        min_grid->setContentsMargins(8, 8, 8, 8);
+        min_grid->setHorizontalSpacing(6);
+        min_grid->setVerticalSpacing(4);
         min_jump_spin_ = new QDoubleSpinBox(min_gb);
         min_path_spin_ = new QDoubleSpinBox(min_gb);
         min_shift_spin_ = new QDoubleSpinBox(min_gb);
@@ -820,37 +833,49 @@ private:
             s->setRange(0, 1000);
             s->setDecimals(3);
         }
-        min_form->addRow(trInk("Min. skok (PU)"), min_jump_spin_);
-        min_form->addRow(trInk("Min. ścieżka"), min_path_spin_);
-        min_form->addRow(trInk("Min. przesunięcie"), min_shift_spin_);
-        min_form->addRow(trInk("Min. krawędź"), min_edge_spin_);
+        min_grid->addWidget(new QLabel(trInk("Min. skok (PU)"), min_gb), 0, 0);
+        min_grid->addWidget(min_jump_spin_, 0, 1);
+        min_grid->addWidget(new QLabel(trInk("Min. ścieżka"), min_gb), 0, 2);
+        min_grid->addWidget(min_path_spin_, 0, 3);
+        min_grid->addWidget(new QLabel(trInk("Min. przesunięcie"), min_gb), 1, 0);
+        min_grid->addWidget(min_shift_spin_, 1, 1);
+        min_grid->addWidget(new QLabel(trInk("Min. krawędź"), min_gb), 1, 2);
+        min_grid->addWidget(min_edge_spin_, 1, 3);
+        min_grid->setColumnStretch(1, 1);
+        min_grid->setColumnStretch(3, 1);
 
-        auto* repeat_gb = new QGroupBox(trInk("Powtórzenia (cały job)"), filters_inner);
-        auto* repeat_form = new QFormLayout(repeat_gb);
-        styleFormLayout(repeat_form, ui_profile_);
+        auto* repeat_gb = new QGroupBox(trInk("Powtórzenia (cały job)"), filters);
+        auto* repeat_grid = new QGridLayout(repeat_gb);
+        repeat_grid->setContentsMargins(8, 8, 8, 8);
+        repeat_grid->setHorizontalSpacing(6);
+        repeat_grid->setVerticalSpacing(4);
         repeat_steps_spin_ = new QSpinBox(repeat_gb);
         repeat_steps_spin_->setRange(1, 50);
         repeat_gap_spin_ = new QDoubleSpinBox(repeat_gb);
         repeat_gap_spin_->setRange(0, 100);
         repeat_gap_spin_->setDecimals(3);
-        repeat_form->addRow(trInk("Powtórzenia"), repeat_steps_spin_);
-        repeat_form->addRow(trInk("Max. luka zamknięcia"), repeat_gap_spin_);
+        repeat_grid->addWidget(new QLabel(trInk("Powtórzenia"), repeat_gb), 0, 0);
+        repeat_grid->addWidget(repeat_steps_spin_, 0, 1);
+        repeat_grid->addWidget(new QLabel(trInk("Max. luka zamknięcia"), repeat_gb), 0, 2);
+        repeat_grid->addWidget(repeat_gap_spin_, 0, 3);
+        repeat_grid->setColumnStretch(1, 1);
+        repeat_grid->setColumnStretch(3, 1);
         auto* repeat_hint = new QLabel(
             trInk("Powtórzenia pojedynczej warstwy (np. twardy materiał) ustaw w głównym "
                   "oknie: lewy panel → zakładka Warstwy."),
             repeat_gb);
         repeat_hint->setWordWrap(true);
-        repeat_form->addRow(repeat_hint);
+        repeat_grid->addWidget(repeat_hint, 1, 0, 1, 4);
 
-        fv->addWidget(blade_gb);
-        fv->addWidget(overcut_gb);
-        fv->addWidget(min_gb);
-        fv->addWidget(repeat_gb);
-        fv->addStretch(1);
-        filters_scroll->setWidget(filters_inner);
-        auto* filters_root = new QVBoxLayout(filters);
-        filters_root->addWidget(filters_scroll);
-        tabs_->addTab(filters, trInk("Filtry"));
+        fgrid->addWidget(blade_gb, 0, 0);
+        fgrid->addWidget(overcut_gb, 0, 1);
+        fgrid->addWidget(min_gb, 1, 0);
+        fgrid->addWidget(repeat_gb, 1, 1);
+        fgrid->setColumnStretch(0, 1);
+        fgrid->setColumnStretch(1, 1);
+        fgrid->setRowStretch(0, 1);
+        fgrid->setRowStretch(1, 1);
+        tabs_->addTab(wrapTabInScroll(filters), trInk("Filtry"));
 
         splitter_ = new QSplitter(Qt::Horizontal, dlg_);
         auto* left_w = new QWidget(dlg_);
@@ -901,13 +926,6 @@ private:
                          });
         QObject::connect(transport_combo_, qOverload<int>(&QComboBox::currentIndexChanged), dlg_,
                          [this]() { updateTransportVisibility(); });
-        QObject::connect(browse_btn_, &QPushButton::clicked, dlg_, [this]() {
-            const QString path = QFileDialog::getSaveFileName(
-                dlg_, trInk("Plik wyjściowy"), output_edit_->text(),
-                trInk("Program (*.gcode *.nc *.txt);;Wszystkie (*)"));
-            if (!path.isEmpty())
-                output_edit_->setText(path);
-        });
         QObject::connect(refresh_port_btn_, &QPushButton::clicked, dlg_,
                          [this]() { refreshSerialPorts(); });
         QObject::connect(protocol_combo_, qOverload<int>(&QComboBox::currentIndexChanged), dlg_,
@@ -935,16 +953,14 @@ private:
         driver_combo_->setCurrentIndex(presetIndex(driver_combo_, p.device.preset_id));
         mfg_edit_->setText(p.device.manufacturer);
         model_edit_->setText(p.device.model_name);
-        width_spin_->setValue(p.width);
-        height_spin_->setValue(p.height);
         custom_chk_->setChecked(p.custom);
         swap_chk_->setChecked(p.device.swap_xy);
         mirror_x_chk_->setChecked(p.device.mirror_x);
         mirror_y_chk_->setChecked(p.device.mirror_y);
         scale_spin_->setValue(p.device.device_scale);
+        work_area_w_spin_->setValue(p.work_area_width > 0.0 ? p.work_area_width : 300.0);
+        work_area_h_spin_->setValue(p.work_area_height > 0.0 ? p.work_area_height : 300.0);
         PlotTransportKind transport = p.device.transport;
-        if (transport == PlotTransportKind::Printer)
-            transport = PlotTransportKind::SerialPort;
         transport_combo_->setCurrentIndex(transport_combo_->findData(int(transport)));
         refreshSerialPorts();
         setSerialPortInCombo(p.device.port_name);
@@ -963,9 +979,7 @@ private:
         flow_rts_chk_->setChecked(p.device.flow_rts_cts);
         flow_dsr_chk_->setChecked(p.device.flow_dsr_dtr);
         flow_xon_chk_->setChecked(p.device.flow_xon_xoff);
-        output_edit_->setText(p.device.output_path);
         protocol_combo_->setCurrentIndex(protocol_combo_->findData(int(p.protocol)));
-        plot_scale_spin_->setValue(p.plot_scale);
         gcode_builtin_chk_->setChecked(p.gcode_builtin);
         gcode_dialect_combo_->setCurrentIndex(
             gcode_dialect_combo_->findData(int(p.gcode_dialect)));
@@ -1012,12 +1026,14 @@ private:
         p.device.preset_id = driver_combo_->currentData().toString();
         p.device.manufacturer = mfg_edit_->text().trimmed();
         p.device.model_name = model_edit_->text().trimmed();
-        p.width = width_spin_->value();
-        p.height = height_spin_->value();
         p.device.swap_xy = swap_chk_->isChecked();
         p.device.mirror_x = mirror_x_chk_->isChecked();
         p.device.mirror_y = mirror_y_chk_->isChecked();
         p.device.device_scale = scale_spin_->value();
+        p.work_area_width = work_area_w_spin_->value();
+        p.work_area_height = work_area_h_spin_->value();
+        p.device.work_area_width = p.work_area_width;
+        p.device.work_area_height = p.work_area_height;
         p.device.transport =
             static_cast<PlotTransportKind>(transport_combo_->currentData().toInt());
         p.device.port_name = port_combo_->currentData().toString();
@@ -1032,9 +1048,7 @@ private:
         p.device.flow_rts_cts = flow_rts_chk_->isChecked();
         p.device.flow_dsr_dtr = flow_dsr_chk_->isChecked();
         p.device.flow_xon_xoff = flow_xon_chk_->isChecked();
-        p.device.output_path = output_edit_->text().trimmed();
         p.protocol = static_cast<PlotProtocol>(protocol_combo_->currentData().toInt());
-        p.plot_scale = plot_scale_spin_->value();
         p.gcode_builtin = gcode_builtin_chk_->isChecked();
         p.gcode_dialect = static_cast<GCodeProtocolSettings::Dialect>(
             gcode_dialect_combo_->currentData().toInt());
@@ -1077,8 +1091,6 @@ private:
         const bool en = custom_chk_->isChecked();
         mfg_edit_->setEnabled(en);
         model_edit_->setEnabled(en);
-        width_spin_->setEnabled(en);
-        height_spin_->setEnabled(en);
         driver_combo_->setEnabled(!en);
         updateProtocolLockedByPreset();
     }
@@ -1144,12 +1156,10 @@ private:
             static_cast<PlotTransportKind>(transport_combo_->currentData().toInt());
         const bool serial = kind == PlotTransportKind::SerialPort;
         const bool tcp = kind == PlotTransportKind::TcpIp;
-        const bool file_out = kind == PlotTransportKind::FileOutput;
         setFormRowVisible(conn_form_, port_row_widget_, serial);
         setFormRowVisible(conn_form_, serial_params_row_widget_, serial);
         setFormRowVisible(conn_form_, tcp_row_widget_, tcp);
         setFormRowVisible(conn_form_, flow_widget_, serial);
-        setFormRowVisible(conn_form_, output_row_widget_, file_out);
     }
 
     void refreshSerialPorts()
@@ -1249,14 +1259,14 @@ private:
     QComboBox* driver_combo_ = nullptr;
     QLineEdit* mfg_edit_ = nullptr;
     QLineEdit* model_edit_ = nullptr;
-    QDoubleSpinBox* width_spin_ = nullptr;
-    QDoubleSpinBox* height_spin_ = nullptr;
     QCheckBox* custom_chk_ = nullptr;
 
     QCheckBox* swap_chk_ = nullptr;
     QCheckBox* mirror_x_chk_ = nullptr;
     QCheckBox* mirror_y_chk_ = nullptr;
     QDoubleSpinBox* scale_spin_ = nullptr;
+    QDoubleSpinBox* work_area_w_spin_ = nullptr;
+    QDoubleSpinBox* work_area_h_spin_ = nullptr;
 
     QFormLayout* conn_form_ = nullptr;
     QComboBox* transport_combo_ = nullptr;
@@ -1272,16 +1282,11 @@ private:
     QCheckBox* flow_rts_chk_ = nullptr;
     QCheckBox* flow_dsr_chk_ = nullptr;
     QCheckBox* flow_xon_chk_ = nullptr;
-    QLineEdit* output_edit_ = nullptr;
-    QWidget* output_row_widget_ = nullptr;
-    QPushButton* browse_btn_ = nullptr;
     QWidget* tcp_row_widget_ = nullptr;
     QLineEdit* tcp_host_edit_ = nullptr;
     QSpinBox* tcp_port_spin_ = nullptr;
 
     QComboBox* protocol_combo_ = nullptr;
-    QDoubleSpinBox* plot_scale_spin_ = nullptr;
-    QLabel* plot_scale_row_label_ = nullptr;
     QGroupBox* gcode_group_ = nullptr;
     QCheckBox* gcode_builtin_chk_ = nullptr;
     QComboBox* gcode_dialect_combo_ = nullptr;

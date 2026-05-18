@@ -733,8 +733,8 @@ Version 0.2</translation></message>
         <translation>Custom force / speed (HPGL FS/VS)</translation>
     </message>
     <message>
-        <source>Własna siła / prędkość cięcia</source>
-        <translation>Custom cut force / speed</translation>
+        <source>Własna prędkość</source>
+        <translation>Custom speed</translation>
     </message>
     <message>
         <source>Własne</source>

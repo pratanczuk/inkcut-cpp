@@ -150,7 +150,7 @@ NEW_TRANSLATIONS: dict[str, str] = {
     "Prawy": "Right",
     "Dolny": "Bottom",
     "Podaj po": "Feed after",
-    "Własna siła / prędkość cięcia": "Custom cut force / speed",
+    "Własna prędkość": "Custom speed",
     "Siła (FS)": "Force (FS)",
     "Prędkość cięcia (VS). Typowo cm/s, zakres ~1–110 zależnie od plotera.": (
         "Cutting speed (VS). Usually cm/s; range ~1–110 depends on plotter."

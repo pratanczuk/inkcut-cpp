@@ -81,7 +81,7 @@ struct ColorFilterEntry {
     int pass_count = 1;
 };
 
-enum class PlotTransportKind { SerialPort, TcpIp, FileOutput, Printer };
+enum class PlotTransportKind { SerialPort, TcpIp, Printer };
 
 struct DeviceSetup {
     QString name;
@@ -103,12 +103,13 @@ struct DeviceSetup {
     bool flow_rts_cts = false;
     bool flow_dsr_dtr = false;
     bool flow_xon_xoff = false;
-    QString output_path;
-    QString printer_name;
     bool swap_xy = false;
     bool mirror_x = false;
     bool mirror_y = false;
     double device_scale = 1.0;
+    /// Physical work-area of the plotter in mm — independent from material size.
+    double work_area_width = 300.0;
+    double work_area_height = 300.0;
     /// Przed/po połączeniu oraz przed/po jobie (HPGL lub G-code, linie rozdzielone \\n).
     QString before_connect_command;
     QString after_connect_command;

@@ -9,13 +9,13 @@ namespace {
 const QVector<DevicePreset> kPresets = []() {
     QVector<DevicePreset> v;
     auto add = [&](DevicePreset p) { v.push_back(std::move(p)); };
-    add({QStringLiteral("grbl"), QStringLiteral("GRBLHAL"), QStringLiteral("CNC"), 300, 300,
-         PlotProtocol::GCode, 1, false, false, false, 115200,
-         GCodeProtocolSettings::Dialect::Grbl, GCodeProtocolSettings::ZAxis, 0, 700, 1000});
+    add({QStringLiteral("grbl"), QStringLiteral("GRBLHAL"), QStringLiteral("CNC"),
+         /*material*/ 300, 300, /*work_area*/ 300, 300, PlotProtocol::GCode, false, false, false,
+         115200, GCodeProtocolSettings::Dialect::Grbl, GCodeProtocolSettings::ZAxis, 0, 700, 1000});
     add({QStringLiteral("grbl-solenoid"), QStringLiteral("DIY"),
-         QStringLiteral("GRBL Solenoid PWM"), 300, 300, PlotProtocol::GCode, 1, false, false, false,
-         115200, GCodeProtocolSettings::Dialect::Grbl, GCodeProtocolSettings::SolenoidPwm, 0, 700,
-         1000});
+         QStringLiteral("GRBL Solenoid PWM"), /*material*/ 300, 300, /*work_area*/ 300, 300,
+         PlotProtocol::GCode, false, false, false, 115200,
+         GCodeProtocolSettings::Dialect::Grbl, GCodeProtocolSettings::SolenoidPwm, 0, 700, 1000});
     return v;
 }();
 
@@ -46,8 +46,9 @@ void applyPresetToJob(const DevicePreset& preset, PlotJobSettings& job)
         job.device.name = QStringLiteral("%1 %2").arg(preset.manufacturer, preset.model);
     job.material.width = preset.material_width;
     job.material.height = preset.material_height;
+    job.device.work_area_width = preset.work_area_width;
+    job.device.work_area_height = preset.work_area_height;
     job.protocol.protocol = PlotProtocol::GCode;
-    job.protocol.dmpl_mode = preset.dmpl_mode;
     job.device.swap_xy = preset.swap_xy;
     job.device.mirror_x = preset.mirror_x;
     job.device.mirror_y = preset.mirror_y;

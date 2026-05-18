@@ -38,9 +38,6 @@ struct GCodeProtocolSettings {
 
 struct ProtocolSettings {
     PlotProtocol protocol = PlotProtocol::GCode;
-    /// Legacy fields kept for backward compatibility in saved jobs.
-    bool hpgl_pad = false;
-    int dmpl_mode = 1;
     double plot_scale = 1021.0 / 90.0;
     GCodeProtocolSettings gcode;
 };

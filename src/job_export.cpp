@@ -20,9 +20,6 @@ QJsonObject protocolSettingsToJson(const ProtocolSettings& p)
 {
     QJsonObject o;
     o.insert(QStringLiteral("protocol"), plotProtocolToCli(p.protocol));
-    o.insert(QStringLiteral("hpgl_pad"), p.hpgl_pad);
-    o.insert(QStringLiteral("dmpl_mode"), p.dmpl_mode);
-    o.insert(QStringLiteral("plot_scale"), p.plot_scale);
 
     QJsonObject gc;
     gc.insert(QStringLiteral("use_builtin"), p.gcode.use_builtin);
@@ -47,13 +44,6 @@ bool protocolSettingsFromJson(const QJsonObject& o, ProtocolSettings& p, QString
     const QString prot = o.value(QStringLiteral("protocol")).toString();
     if (!prot.isEmpty())
         p.protocol = plotProtocolFromCli(QStringView(prot));
-
-    if (o.contains(QStringLiteral("hpgl_pad")))
-        p.hpgl_pad = o.value(QStringLiteral("hpgl_pad")).toBool();
-    if (o.contains(QStringLiteral("dmpl_mode")))
-        p.dmpl_mode = o.value(QStringLiteral("dmpl_mode")).toInt();
-    if (o.contains(QStringLiteral("plot_scale")))
-        p.plot_scale = o.value(QStringLiteral("plot_scale")).toDouble();
 
     const QJsonObject gc = o.value(QStringLiteral("gcode")).toObject();
     if (!gc.isEmpty()) {
@@ -203,12 +193,12 @@ QJsonObject plotJobSettingsToJson(const PlotJobSettings& s)
     dev.insert(QStringLiteral("flow_rts_cts"), s.device.flow_rts_cts);
     dev.insert(QStringLiteral("flow_dsr_dtr"), s.device.flow_dsr_dtr);
     dev.insert(QStringLiteral("flow_xon_xoff"), s.device.flow_xon_xoff);
-    dev.insert(QStringLiteral("output_path"), s.device.output_path);
-    dev.insert(QStringLiteral("printer_name"), s.device.printer_name);
     dev.insert(QStringLiteral("swap_xy"), s.device.swap_xy);
     dev.insert(QStringLiteral("mirror_x"), s.device.mirror_x);
     dev.insert(QStringLiteral("mirror_y"), s.device.mirror_y);
     dev.insert(QStringLiteral("device_scale"), s.device.device_scale);
+    dev.insert(QStringLiteral("work_area_width"), s.device.work_area_width);
+    dev.insert(QStringLiteral("work_area_height"), s.device.work_area_height);
     dev.insert(QStringLiteral("before_connect"), s.device.before_connect_command);
     dev.insert(QStringLiteral("after_connect"), s.device.after_connect_command);
     dev.insert(QStringLiteral("before_job"), s.device.before_job_command);
@@ -395,12 +385,16 @@ bool plotJobSettingsFromJson(const QJsonObject& o, PlotJobSettings& s, QString* 
             s.device.flow_dsr_dtr = dev.value(QStringLiteral("flow_dsr_dtr")).toBool();
         if (dev.contains(QStringLiteral("flow_xon_xoff")))
             s.device.flow_xon_xoff = dev.value(QStringLiteral("flow_xon_xoff")).toBool();
-        s.device.output_path = dev.value(QStringLiteral("output_path")).toString();
-        s.device.printer_name = dev.value(QStringLiteral("printer_name")).toString();
         s.device.swap_xy = dev.value(QStringLiteral("swap_xy")).toBool();
         s.device.mirror_x = dev.value(QStringLiteral("mirror_x")).toBool();
         s.device.mirror_y = dev.value(QStringLiteral("mirror_y")).toBool();
         s.device.device_scale = dev.value(QStringLiteral("device_scale")).toDouble(1.0);
+        s.device.work_area_width = dev.value(QStringLiteral("work_area_width")).toDouble(300.0);
+        s.device.work_area_height = dev.value(QStringLiteral("work_area_height")).toDouble(300.0);
+        if (s.device.work_area_width <= 0.0)
+            s.device.work_area_width = 300.0;
+        if (s.device.work_area_height <= 0.0)
+            s.device.work_area_height = 300.0;
         if (dev.contains(QStringLiteral("before_connect")))
             s.device.before_connect_command = dev.value(QStringLiteral("before_connect")).toString();
         if (dev.contains(QStringLiteral("after_connect")))

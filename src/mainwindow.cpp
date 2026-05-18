@@ -46,10 +46,12 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QGraphicsItemGroup>
+#include <QGraphicsSimpleTextItem>
 #include <QGraphicsPathItem>
 #include <QPushButton>
 #include <QGroupBox>
 #include <QScrollArea>
+#include <QSplitter>
 #include <QThread>
 #include <QUuid>
 
@@ -155,6 +157,127 @@ QPen penPlotMove()
 QPen penPlotCut()
 {
     return QPen(QColor(70, 70, 70), 0, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+}
+
+struct MatGridSteps {
+    double minor_mm = 10.0;
+    double major_mm = 50.0;
+};
+
+MatGridSteps chooseMatGridSteps(double span_mm)
+{
+    const double span = qMax(1.0, span_mm);
+    if (span <= 100.0)
+        return {1.0, 10.0};
+    if (span <= 250.0)
+        return {5.0, 25.0};
+    if (span <= 600.0)
+        return {10.0, 50.0};
+    if (span <= 1200.0)
+        return {20.0, 100.0};
+    if (span <= 3000.0)
+        return {50.0, 250.0};
+    return {100.0, 500.0};
+}
+
+void addRulerLabel(QGraphicsScene* scene, const QString& text, const QPointF& pos,
+                   qreal rotation_deg = 0.0, const QColor& color = QColor(160, 40, 40),
+                   bool bold = false)
+{
+    auto* label = scene->addSimpleText(text);
+    label->setBrush(QBrush(color));
+    QFont f = label->font();
+    f.setPointSizeF(8.0);
+    f.setBold(bold);
+    label->setFont(f);
+    label->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
+    label->setPos(pos);
+    if (!qFuzzyIsNull(rotation_deg))
+        label->setRotation(rotation_deg);
+}
+
+void addDeviceRulerOverlay(QGraphicsScene* scene, const QRectF& rect_mm)
+{
+    if (!scene || !rect_mm.isValid())
+        return;
+
+    const QColor mat_bg(252, 248, 246);
+    const QColor border_color(210, 60, 60);
+    const QColor label_color(150, 30, 30);
+
+    scene->addRect(rect_mm, QPen(Qt::NoPen), QBrush(mat_bg));
+
+    const MatGridSteps steps = chooseMatGridSteps(qMax(rect_mm.width(), rect_mm.height()));
+
+    auto near_multiple = [](double value, double base) {
+        if (base <= 0.0)
+            return false;
+        const double q = value / base;
+        return std::abs(q - std::round(q)) < 1e-6;
+    };
+
+    QPen border_pen(border_color, 0, Qt::SolidLine);
+    scene->addRect(rect_mm, border_pen, Qt::NoBrush);
+
+    QPen tick_pen(border_color, 0, Qt::SolidLine);
+    const double minor_tick = 3.0;
+    const double major_tick = 7.0;
+
+    // Vertical ticks: top + bottom rulers.
+    for (double dx = 0.0; dx <= rect_mm.width() + 1e-6; dx += steps.minor_mm) {
+        const double x = rect_mm.left() + dx;
+        const bool major = near_multiple(dx, steps.major_mm);
+        const double len = major ? major_tick : minor_tick;
+        scene->addLine(x, rect_mm.top(), x, rect_mm.top() + len, tick_pen);
+        scene->addLine(x, rect_mm.bottom(), x, rect_mm.bottom() - len, tick_pen);
+        if (major) {
+            const QString text = QStringLiteral("%1").arg(dx, 0, 'f', 0);
+            addRulerLabel(scene, text, QPointF(x + 2.0, rect_mm.top() - 14.0), 0.0,
+                          label_color);
+            addRulerLabel(scene, text, QPointF(x + 2.0, rect_mm.bottom() + 2.0), 0.0,
+                          label_color);
+        }
+    }
+    // Horizontal ticks: left + right rulers.
+    for (double dy = 0.0; dy <= rect_mm.height() + 1e-6; dy += steps.minor_mm) {
+        const double y = rect_mm.top() + dy;
+        const bool major = near_multiple(dy, steps.major_mm);
+        const double len = major ? major_tick : minor_tick;
+        scene->addLine(rect_mm.left(), y, rect_mm.left() + len, y, tick_pen);
+        scene->addLine(rect_mm.right(), y, rect_mm.right() - len, y, tick_pen);
+        if (major) {
+            const QString text = QStringLiteral("%1").arg(dy, 0, 'f', 0);
+            addRulerLabel(scene, text, QPointF(rect_mm.left() - 22.0, y + 2.0), 0.0,
+                          label_color);
+            addRulerLabel(scene, text, QPointF(rect_mm.right() + 4.0, y + 2.0), 0.0,
+                          label_color);
+        }
+    }
+
+    // "SAFE CUTTING AREA" badge in the top-left corner.
+    auto* badge = scene->addSimpleText(QStringLiteral("SAFE CUTTING AREA"));
+    badge->setBrush(QBrush(QColor(255, 255, 255)));
+    QFont badge_font = badge->font();
+    badge_font.setPointSizeF(7.5);
+    badge_font.setBold(true);
+    badge->setFont(badge_font);
+    badge->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
+    const QRectF br = badge->boundingRect();
+    const double pad_x = 6.0;
+    const double pad_y = 2.0;
+    auto* badge_bg = scene->addRect(QRectF(0, 0, br.width() + 2 * pad_x, br.height() + 2 * pad_y),
+                                    QPen(Qt::NoPen), QBrush(border_color));
+    badge_bg->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
+    badge_bg->setPos(QPointF(rect_mm.left() + 6.0, rect_mm.top() + 6.0));
+    badge->setPos(QPointF(rect_mm.left() + 6.0 + pad_x, rect_mm.top() + 6.0 + pad_y));
+    badge->setZValue(badge_bg->zValue() + 0.1);
+
+    addRulerLabel(scene,
+                  QStringLiteral("%1 × %2 mm")
+                      .arg(rect_mm.width(), 0, 'f', 0)
+                      .arg(rect_mm.height(), 0, 'f', 0),
+                  QPointF(rect_mm.center().x() - 36.0, rect_mm.bottom() + 18.0), 0.0,
+                  label_color, true);
 }
 
 QString colorFilterStorageKey(const QString& color_key, bool is_fill)
@@ -270,7 +393,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
         return s;
     };
 
-    lv->addWidget(new QLabel(trInk("Obszar plotowania"), material_tab));
+    lv->addWidget(new QLabel(trInk("Material dimensions"), material_tab));
     mat_w_spin_ = make_pad_spin();
     mat_h_spin_ = make_pad_spin();
     mat_w_spin_->setRange(0.1, 99999.9);
@@ -320,7 +443,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     mat_roll_chk_ = new QCheckBox(trInk("Materiał na rolce"), material_tab);
     lv->addWidget(mat_roll_chk_);
     mat_force_speed_chk_ =
-        new QCheckBox(trInk("Własna siła / prędkość cięcia"), material_tab);
+        new QCheckBox(trInk("Własna prędkość"), material_tab);
     lv->addWidget(mat_force_speed_chk_);
 
     mat_cutter_cut_params_ = new QWidget(material_tab);
@@ -501,41 +624,83 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     left_tabs_->addTab(graphic_tab, trInk("Grafika"));
 
     auto* layers_tab = new QWidget(left_tabs_);
-    auto* layers_scroll = new QScrollArea(layers_tab);
-    layers_scroll->setWidgetResizable(true);
-    layers_scroll->setFrameShape(QFrame::NoFrame);
-    auto* layers_inner = new QWidget(layers_scroll);
-    layers_scroll->setWidget(layers_inner);
-    auto* llv = new QVBoxLayout(layers_inner);
-    llv->setSpacing(8);
-    auto* layers_hint = new QLabel(
+    auto* layers_tab_outer = new QVBoxLayout(layers_tab);
+    layers_tab_outer->setContentsMargins(0, 0, 0, 0);
+    layers_tab_outer->setSpacing(0);
+
+    layers_scroll_ = new QScrollArea(layers_tab);
+    layers_scroll_->setWidgetResizable(true);
+    layers_scroll_->setFrameShape(QFrame::NoFrame);
+    layers_scroll_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    layers_scroll_->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    layers_scroll_->viewport()->installEventFilter(this);
+    layers_tab_outer->addWidget(layers_scroll_, 1);
+
+    auto* layers_content = new QWidget(layers_scroll_);
+    layers_scroll_->setWidget(layers_content);
+    auto* layers_outer = new QVBoxLayout(layers_content);
+    layers_outer->setContentsMargins(0, 0, 0, 0);
+    layers_outer->setSpacing(2);
+
+    const bool tablet_profile_now = app_settings_.ui_profile == UiProfile::Tablet;
+    auto make_layers_section = [&](const QString& header_text, QListWidget*& list_out,
+                                   QLabel** header_label_out = nullptr,
+                                   bool header_word_wrap = false) {
+        auto* section = new QWidget(layers_content);
+        auto* v = new QVBoxLayout(section);
+        v->setContentsMargins(6, tablet_profile_now ? 2 : 4, 6, tablet_profile_now ? 2 : 4);
+        v->setSpacing(tablet_profile_now ? 1 : 2);
+        auto* lbl = new QLabel(header_text, section);
+        if (header_word_wrap)
+            lbl->setWordWrap(true);
+        lbl->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+        if (tablet_profile_now) {
+            QFont f = lbl->font();
+            f.setPointSizeF(std::max(8.0, f.pointSizeF() - 1.0));
+            lbl->setFont(f);
+            lbl->setMaximumHeight(18);
+        }
+        v->addWidget(lbl);
+        auto* list = new QListWidget(section);
+        list->setObjectName(QStringLiteral("filter_pass_list"));
+        list->setSelectionMode(QAbstractItemView::NoSelection);
+        list->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        list->setMinimumHeight(0);
+        v->addWidget(list, 1);
+        section->setMinimumHeight(0);
+        list_out = list;
+        if (header_label_out)
+            *header_label_out = lbl;
+        return section;
+    };
+
+    QLabel* layers_hint = nullptr;
+    auto* layers_section = make_layers_section(
         trInk("Zaznacz warstwę/kolor i ustaw × (przyciski −/+). "
               "Bez warstw Inkscape: „Cały dokument”."),
-        layers_inner);
-    layers_hint->setWordWrap(true);
-    llv->addWidget(layers_hint);
-    layer_list_ = new QListWidget(layers_inner);
-    layer_list_->setObjectName(QStringLiteral("filter_pass_list"));
-    layer_list_->setSelectionMode(QAbstractItemView::NoSelection);
-    layer_list_->setMinimumHeight(120);
-    llv->addWidget(layer_list_, 2);
-    llv->addWidget(new QLabel(trInk("Kolory wypełnienia"), layers_inner));
-    fill_color_list_ = new QListWidget(layers_inner);
-    fill_color_list_->setObjectName(QStringLiteral("filter_pass_list"));
-    fill_color_list_->setSelectionMode(QAbstractItemView::NoSelection);
-    llv->addWidget(fill_color_list_, 1);
-    llv->addWidget(new QLabel(trInk("Kolory obrysu"), layers_inner));
-    stroke_color_list_ = new QListWidget(layers_inner);
-    stroke_color_list_->setObjectName(QStringLiteral("filter_pass_list"));
-    stroke_color_list_->setSelectionMode(QAbstractItemView::NoSelection);
-    llv->addWidget(stroke_color_list_, 1);
-    auto* layers_root = new QVBoxLayout(layers_tab);
-    layers_root->setContentsMargins(0, 0, 0, 0);
-    layers_root->addWidget(layers_scroll);
-    dxf_layers_hint_ = new QLabel(QString(), layers_inner);
+        layer_list_, &layers_hint, true);
+    auto* fill_section = make_layers_section(trInk("Kolory wypełnienia"), fill_color_list_);
+    auto* stroke_section = make_layers_section(trInk("Kolory obrysu"), stroke_color_list_);
+
+    layers_outer->addWidget(layers_section, 3);
+    layers_outer->addWidget(fill_section, 2);
+    layers_outer->addWidget(stroke_section, 2);
+    layers_outer->addStretch(0);  // tail spacer (stretch set dynamically per UI profile)
+
+    dxf_layers_hint_ = new QLabel(QString(), layers_tab);
     dxf_layers_hint_->setWordWrap(true);
+    dxf_layers_hint_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
     dxf_layers_hint_->hide();
-    llv->insertWidget(1, dxf_layers_hint_);
+    if (layers_hint) {
+        auto* hint_layout = layers_hint->parentWidget()->layout();
+        if (hint_layout)
+            hint_layout->addWidget(dxf_layers_hint_);
+        else
+            layers_outer->insertWidget(0, dxf_layers_hint_);
+    } else {
+        layers_outer->insertWidget(0, dxf_layers_hint_);
+    }
+
     left_tabs_->addTab(layers_tab, trInk("Warstwy"));
     connect(layer_list_, &QListWidget::itemChanged, this, &MainWindow::onLayerOrColorFilterChanged);
     connect(fill_color_list_, &QListWidget::itemChanged, this,
@@ -687,15 +852,12 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     transport_combo_->addItem(trInk("Port szeregowy"),
                               int(PlotTransportKind::SerialPort));
     transport_combo_->addItem(QStringLiteral("TCP/IP"), int(PlotTransportKind::TcpIp));
-    transport_combo_->addItem(trInk("Zapis do pliku"), int(PlotTransportKind::FileOutput));
     connect(transport_combo_, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &MainWindow::onTransportChanged);
     port_edit_ = new QLineEdit(QStringLiteral("/dev/ttyUSB0"), device_host_);
     baud_spin_ = new QSpinBox(device_host_);
     baud_spin_->setRange(1200, 1000000);
     baud_spin_->setValue(115200);
-    output_path_edit_ = new QLineEdit(device_host_);
-    printer_edit_ = new QLineEdit(device_host_);
     plugin_combo_ = new QComboBox(device_host_);
     plugin_refresh_btn_ = new QPushButton(device_host_);
     styleToolButton(plugin_refresh_btn_, UiIcons::refresh(this),
@@ -721,6 +883,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     history_table_->setSelectionBehavior(QAbstractItemView::SelectRows);
     history_table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     history_table_->setAlternatingRowColors(true);
+    history_table_->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    history_table_->verticalHeader()->setDefaultSectionSize(30);
+    history_table_->setMinimumHeight(history_table_->horizontalHeader()->height() + 3 * 30 + 10);
     history_table_->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(history_table_, &QTableWidget::customContextMenuRequested, this,
             &MainWindow::showJobHistoryContextMenu);
@@ -1078,8 +1243,6 @@ PlotJobSettings MainWindow::collectJobSettings() const
         }
     }
     s.device.baud_rate = baud_spin_->value();
-    s.device.output_path = output_path_edit_->text();
-    s.device.printer_name = printer_edit_->text().trimmed();
     s.device.preset_id = preset_combo_->currentData().toString();
 
     if (layer_list_) {
@@ -1642,13 +1805,19 @@ void MainWindow::rebuildPreview()
     preview_view_->setGraphicDragTarget(nullptr);
 
     const PlotJobSettings job = collectJobSettings();
-    const QPainterPath device_path = deviceAreaPath(job.material);
+    const QPainterPath device_path = deviceAreaPath(job.device, job.material);
+    const QRectF device_rect = device_path.boundingRect();
     const QPainterPath mat_path = materialOutlinePath(job.material);
     const QPainterPath avail_path = materialAvailableAreaPath(job.material);
 
-    scene_->addPath(device_path, QPen(QColor(235, 194, 194), 0, Qt::DashLine));
-    scene_->addPath(mat_path, QPen(Qt::black, 0, Qt::SolidLine));
-    scene_->addPath(avail_path, QPen(Qt::black, 0, Qt::DashLine));
+    addDeviceRulerOverlay(scene_, device_rect);
+    // Material outline drawn on top of the cutting mat. Filled lightly to make the
+    // material area easy to distinguish from the machine work-area.
+    auto* mat_item = scene_->addPath(mat_path,
+                                     QPen(QColor(40, 40, 40), 0, Qt::SolidLine),
+                                     QBrush(QColor(255, 255, 255, 200)));
+    Q_UNUSED(mat_item);
+    scene_->addPath(avail_path, QPen(QColor(40, 40, 40), 0, Qt::DashLine));
 
     QRectF bounds = device_path.boundingRect().united(mat_path.boundingRect());
 
@@ -1717,12 +1886,13 @@ void MainWindow::rebuildLivePlotScene()
     live_material_item_ = nullptr;
 
     const PlotJobSettings job = collectJobSettings();
-    live_scene_->addPath(deviceAreaPath(job.material),
-                         QPen(QColor(235, 194, 194), 0, Qt::DashLine));
+    addDeviceRulerOverlay(live_scene_, deviceAreaPath(job.device, job.material).boundingRect());
     live_material_item_ =
-        live_scene_->addPath(materialOutlinePath(job.material), QPen(Qt::black, 0, Qt::SolidLine));
+        live_scene_->addPath(materialOutlinePath(job.material),
+                             QPen(QColor(40, 40, 40), 0, Qt::SolidLine),
+                             QBrush(QColor(255, 255, 255, 200)));
     live_scene_->addPath(materialAvailableAreaPath(job.material),
-                         QPen(Qt::black, 0, Qt::DashLine));
+                         QPen(QColor(40, 40, 40), 0, Qt::DashLine));
 
     if (!current_file_.isEmpty()) {
         QPainterPath path;
@@ -2529,8 +2699,20 @@ void MainWindow::applyUiProfile()
             btn->setIconSize(QSize(icon_px, icon_px));
     }
 
-    if (bottom_dock_)
+    for (QListWidget* list : {layer_list_, fill_color_list_, stroke_color_list_}) {
+        if (!list)
+            continue;
+        list->setMinimumHeight(0);
+        list->setMaximumHeight(QWIDGETSIZE_MAX);
+        list->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    }
+    updateLayersPanelMetrics();
+
+    if (bottom_dock_) {
+        bottom_tabs_->setMaximumHeight(QWIDGETSIZE_MAX);
+        bottom_dock_->setMaximumHeight(QWIDGETSIZE_MAX);
         resizeDocks({bottom_dock_}, {m.bottom_dock_height}, Qt::Vertical);
+    }
 
     if (tablet) {
         setMinimumSize(800, 480);
@@ -2652,19 +2834,13 @@ void MainWindow::applyJobSettingsToUi(const PlotJobSettings& job)
 
     preset_combo_->setCurrentIndex(
         std::max(0, preset_combo_->findData(job.device.preset_id)));
-    PlotTransportKind transport = job.device.transport;
-    if (transport == PlotTransportKind::Printer)
-        transport = PlotTransportKind::SerialPort;
-    const int tidx = transport_combo_->findData(int(transport));
+    const int tidx = transport_combo_->findData(int(job.device.transport));
     transport_combo_->setCurrentIndex(tidx >= 0 ? tidx : 0);
     if (job.device.transport == PlotTransportKind::TcpIp)
         port_edit_->setText(QStringLiteral("%1:%2").arg(job.device.tcp_host).arg(job.device.tcp_port));
     else
         port_edit_->setText(job.device.port_name);
     baud_spin_->setValue(job.device.baud_rate);
-    output_path_edit_->setText(job.device.output_path);
-    if (printer_edit_)
-        printer_edit_->setText(job.device.printer_name);
 
     active_device_ = job.device;
     if (active_device_.tcp_host.isEmpty())
@@ -2681,6 +2857,122 @@ void MainWindow::closeEvent(QCloseEvent* event)
 {
     savePersistedSettings();
     QMainWindow::closeEvent(event);
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event)
+{
+    QMainWindow::resizeEvent(event);
+    QMetaObject::invokeMethod(this, &MainWindow::updateLayersPanelMetrics, Qt::QueuedConnection);
+}
+
+bool MainWindow::eventFilter(QObject* obj, QEvent* event)
+{
+    if (layers_scroll_ && obj == layers_scroll_->viewport()
+        && (event->type() == QEvent::Resize || event->type() == QEvent::Show)) {
+        QMetaObject::invokeMethod(this, &MainWindow::updateLayersPanelMetrics,
+                                  Qt::QueuedConnection);
+    }
+    return QMainWindow::eventFilter(obj, event);
+}
+
+void MainWindow::updateLayersPanelMetrics()
+{
+    if (!layers_scroll_ || !layer_list_ || !fill_color_list_ || !stroke_color_list_)
+        return;
+
+    const bool tablet = app_settings_.ui_profile == UiProfile::Tablet;
+
+    QWidget* layer_section = layer_list_->parentWidget();
+    QWidget* fill_section = fill_color_list_->parentWidget();
+    QWidget* stroke_section = stroke_color_list_->parentWidget();
+    if (!layer_section || !fill_section || !stroke_section)
+        return;
+
+    const int list_min_h = tablet ? 28 : 60;
+    for (QListWidget* list : {layer_list_, fill_color_list_, stroke_color_list_}) {
+        list->setMinimumHeight(list_min_h);
+        list->setMaximumHeight(QWIDGETSIZE_MAX);
+        list->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    }
+
+    auto* outer = qobject_cast<QVBoxLayout*>(layer_section->parentWidget()->layout());
+    if (!outer)
+        return;
+
+    // Find indices of the three sections and the tail stretch in the outer layout.
+    int idx_layers = -1;
+    int idx_fill = -1;
+    int idx_stroke = -1;
+    int idx_tail = -1;
+    for (int i = 0; i < outer->count(); ++i) {
+        QLayoutItem* it = outer->itemAt(i);
+        if (!it)
+            continue;
+        if (QWidget* w = it->widget()) {
+            if (w == layer_section)
+                idx_layers = i;
+            else if (w == fill_section)
+                idx_fill = i;
+            else if (w == stroke_section)
+                idx_stroke = i;
+        } else if (it->spacerItem()) {
+            idx_tail = i;
+        }
+    }
+
+    if (!tablet) {
+        for (QWidget* section : {layer_section, fill_section, stroke_section}) {
+            section->setMinimumHeight(90);
+            section->setMaximumHeight(QWIDGETSIZE_MAX);
+            section->setMaximumHeight(QWIDGETSIZE_MAX);
+        }
+        // Remove any fixed-height constraint left over from a previous tablet run.
+        layer_section->setMaximumHeight(QWIDGETSIZE_MAX);
+        fill_section->setMaximumHeight(QWIDGETSIZE_MAX);
+        stroke_section->setMaximumHeight(QWIDGETSIZE_MAX);
+        layer_section->setMinimumHeight(90);
+        fill_section->setMinimumHeight(90);
+        stroke_section->setMinimumHeight(90);
+        if (idx_layers >= 0)
+            outer->setStretch(idx_layers, 3);
+        if (idx_fill >= 0)
+            outer->setStretch(idx_fill, 2);
+        if (idx_stroke >= 0)
+            outer->setStretch(idx_stroke, 2);
+        if (idx_tail >= 0)
+            outer->setStretch(idx_tail, 0);
+        return;
+    }
+
+    // Tablet mode: enforce hard heights so the three sections always fit in the
+    // visible area of the left dock and zero stretch so the tail spacer eats the rest.
+    const int viewport_h = layers_scroll_->viewport()->height();
+    if (viewport_h <= 0) {
+        QMetaObject::invokeMethod(this, &MainWindow::updateLayersPanelMetrics,
+                                  Qt::QueuedConnection);
+        return;
+    }
+
+    const int spacing_reserve = 4;
+    const int abs_min_section = 48;
+    const int ideal_max = 140;
+
+    const int avail = std::max(0, viewport_h - spacing_reserve);
+    int per_section = avail / 3;
+    per_section = std::clamp(per_section, abs_min_section, ideal_max);
+
+    layer_section->setFixedHeight(per_section);
+    fill_section->setFixedHeight(per_section);
+    stroke_section->setFixedHeight(per_section);
+
+    if (idx_layers >= 0)
+        outer->setStretch(idx_layers, 0);
+    if (idx_fill >= 0)
+        outer->setStretch(idx_fill, 0);
+    if (idx_stroke >= 0)
+        outer->setStretch(idx_stroke, 0);
+    if (idx_tail >= 0)
+        outer->setStretch(idx_tail, 1);  // absorb all remaining vertical space
 }
 
 void MainWindow::loadPersistedSettings()
@@ -2749,9 +3041,6 @@ void MainWindow::onTransportChanged(int)
     const auto kind =
         static_cast<PlotTransportKind>(transport_combo_->currentData().toInt());
     const bool tcp = kind == PlotTransportKind::TcpIp;
-    const bool file_out = kind == PlotTransportKind::FileOutput;
-    if (output_path_edit_)
-        output_path_edit_->setVisible(file_out);
     if (tcp) {
         if (port_edit_ && !port_edit_->text().contains(QLatin1Char(':')))
             port_edit_->setText(QStringLiteral("%1:%2").arg(active_device_.tcp_host).arg(active_device_.tcp_port));
@@ -3171,7 +3460,7 @@ void MainWindow::updateUnitSuffixes()
 void MainWindow::retranslateUi()
 {
     if (mat_force_speed_chk_)
-        mat_force_speed_chk_->setText(trInk("Własna siła / prędkość cięcia"));
+        mat_force_speed_chk_->setText(trInk("Własna prędkość"));
 
     if (file_menu_)
         file_menu_->setTitle(trInk("Plik"));

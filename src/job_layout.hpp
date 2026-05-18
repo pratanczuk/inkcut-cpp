@@ -16,6 +16,7 @@ QPainterPath materialAvailableAreaPath(const MaterialSettings& m);
 
 /// Device x-y plane (table); at least as large as the material sheet.
 QPainterPath deviceAreaPath(const MaterialSettings& material);
+QPainterPath deviceAreaPath(const DeviceSetup& device, const MaterialSettings& material);
 
 /// Graphic transform, copies, weedlines, padding on material — before cut filters.
 QPainterPath applyJobLayout(const QPainterPath& optimized_path, const PlotJobSettings& job,
